@@ -126,8 +126,26 @@ body {
   cursor: pointer; flex-shrink: 0;
 }
 .mic-btn:hover { background: #4c4c4c; }
-.mic-btn.listening { background: #da1e28; animation: mic-pulse 1s infinite; }
+.mic-btn.listening { background: #da1e28; }
 @keyframes mic-pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+/* pulsing red dot shown inside the button while listening */
+.mic-dot {
+  display: none;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #fff;
+  animation: mic-pulse 1s infinite;
+  flex-shrink: 0;
+}
+.mic-btn.listening .mic-dot { display: block; }
+.mic-btn.listening .mic-icon { display: none; }
+.mic-btn-label {
+  font-size: 0.6rem; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; color: #fff;
+  display: none;
+}
+.mic-btn.listening .mic-btn-label { display: block; }
 
 /* ── Question box ────────────────────────────────────────────────────────── */
 .question-wrap { padding: 0 1rem 1rem; display: flex; gap: 0.5rem; }
@@ -344,11 +362,15 @@ body {
         Get Route
       </button>
       <button class="mic-btn" id="micBtn" title="Speak your question" aria-label="Microphone">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <rect x="6" y="1" width="6" height="9" rx="3" stroke="currentColor" stroke-width="1.5"/>
-          <path d="M3 9a6 6 0 0012 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M9 15v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
+        <span class="mic-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="6" y="1" width="6" height="9" rx="3" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M3 9a6 6 0 0012 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M9 15v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="mic-dot"></span>
+        <span class="mic-btn-label">Stop</span>
       </button>
     </div>
     <div class="mic-status" id="micStatus" aria-live="polite"></div>
@@ -769,30 +791,110 @@ listenBtn.addEventListener('click', () => speakText(replyText.textContent));
 
 // ── Web Speech API ────────────────────────────────────────────────────────────
 const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-let isListening = false;
 
-if (SpeechRec) {
-  recognition = new SpeechRec();
-  recognition.continuous = false;
+// Mic session state
+let isListening     = false;   // user-visible: session is active
+let _recRunning     = false;   // Chrome instance is currently live
+let _fullTranscript = '';      // accumulated confirmed text across restarts
+let _silenceTimer   = null;    // 2.5 s silence watchdog
+let _maxTimer       = null;    // 20 s hard limit
+const SILENCE_MS    = 2500;
+const MAX_MS        = 20000;
+
+function _startListening() {
+  if (!SpeechRec) return;
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+  isListening     = true;
+  _recRunning     = false;
+  _fullTranscript = '';
+
+  micBtn.classList.add('listening');
+  micStatus.textContent = 'Listening…';
+  questionInput.value   = '';
+
+  // 20 s hard-stop
+  _maxTimer = setTimeout(_stopListening, MAX_MS);
+
+  _launchRec();
+}
+
+function _launchRec() {
+  if (!isListening) return;
+  recognition       = new SpeechRec();
+  recognition.lang  = langSelect.value;
+  recognition.continuous     = true;
   recognition.interimResults = true;
-  recognition.onstart = () => { micBtn.classList.add('listening'); micStatus.textContent = 'Listening...'; };
-  recognition.onend   = () => { micBtn.classList.remove('listening'); isListening = false; micStatus.textContent = ''; };
+
+  recognition.onstart = () => { _recRunning = true; };
+
   recognition.onresult = e => {
-    let interim = '', final = '';
+    // Reset silence timer on every result
+    clearTimeout(_silenceTimer);
+
+    let interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) final += t; else interim += t;
+      if (e.results[i].isFinal) {
+        _fullTranscript += (_fullTranscript ? ' ' : '') + t.trim();
+      } else {
+        interim += t;
+      }
     }
-    micStatus.textContent = interim || final;
-    if (final) { questionInput.value = final; doQuestion(final); }
+    // Show live text in the question box and status
+    const display = _fullTranscript + (interim ? ' ' + interim : '');
+    questionInput.value   = display;
+    micStatus.textContent = display || 'Listening…';
+
+    // Restart silence timer
+    _silenceTimer = setTimeout(_stopListening, SILENCE_MS);
   };
+
   recognition.onerror = e => {
+    _recRunning = false;
+    if (e.error === 'no-speech' || e.error === 'aborted') return; // handled by onend
     micStatus.textContent = `Microphone error: ${e.error}`;
-    micBtn.classList.remove('listening'); isListening = false;
+    _stopListening();
   };
+
+  recognition.onend = () => {
+    _recRunning = false;
+    // Auto-restart if the session is still active (Chrome's short-circuit behaviour)
+    if (isListening) {
+      try { recognition.start(); _recRunning = true; } catch {}
+    }
+  };
+
+  try { recognition.start(); _recRunning = true; } catch {}
+}
+
+function _stopListening() {
+  if (!isListening) return;
+  isListening = false;
+
+  clearTimeout(_silenceTimer);
+  clearTimeout(_maxTimer);
+  _silenceTimer = null;
+  _maxTimer     = null;
+
+  micBtn.classList.remove('listening');
+  micStatus.textContent = '';
+
+  if (_recRunning) {
+    try { recognition.onend = null; recognition.stop(); } catch {}
+    _recRunning = false;
+  }
+
+  const text = _fullTranscript.trim();
+  if (text) {
+    questionInput.value = text;
+    doQuestion(text);
+  }
+}
+
+if (SpeechRec) {
   micBtn.addEventListener('click', () => {
-    if (isListening) { recognition.stop(); }
-    else { recognition.lang = langSelect.value; recognition.start(); isListening = true; }
+    if (isListening) _stopListening(); else _startListening();
   });
 } else {
   micBtn.disabled = true;
