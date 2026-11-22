@@ -4,7 +4,7 @@ A voice-first transit guide for Bengaluru. Ask in English, Kannada, Hindi or Tam
 
 [![Watch the demo](docs/screenshot.png)](https://youtu.be/hOUCWMeTD_w)
 
-Built in 4 hours at the **IBM Bob Hackathon, Bengaluru (Nov 2026)**, where it won **1st place**. The original submission is available as the [`v0.1-hackathon`](../../releases/tag/v0.1-hackathon) release.
+Built in 4 hours at the **IBM Bob Hackathon, Bengaluru (Nov 2026)**, where it won **1st place**. 
 
 ## Features
 
