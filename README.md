@@ -1,181 +1,90 @@
 # Namma Route Buddy
 
-A voice-first, multilingual transit assistant for Bengaluru newcomers. Ask your route in English, Kannada, Hindi, or Tamil; get spoken, step-by-step directions powered by IBM Granite and real-time Google Maps.
+A voice-first transit guide for Bengaluru. Ask in English, Kannada, Hindi or Tamil and get step-by-step bus, metro and auto directions, read aloud in your language.
 
 [![Watch the demo](docs/screenshot.png)](https://youtu.be/hOUCWMeTD_w)
 
-Built for the IBM Granite Hackathon 2026.
-
----
+Built in 4 hours at the **IBM Bob Hackathon, Bengaluru (Nov 2026)**, where it won **1st place**. The original submission is available as the [`v0.1-hackathon`](../../releases/tag/v0.1-hackathon) release.
 
 ## Features
 
-- **Voice input** via the Web Speech API — speak your journey, hear the answer back
-- **Multilingual** — English, Kannada, Hindi, Tamil (kn-IN, hi-IN, ta-IN, en-IN)
-- **Free-text questions** — "How do I get from Silk Board to Whitefield cheapest?"
-- **Follow-up context** — conversation history passed to the LLM for multi-turn queries
-- **Route options** — fastest, cheapest, and recommended options with fare and time
-- **Step timeline** — per-leg breakdown: metro, bus, walk, auto — colour-coded by mode
-- **Newcomer tips** — practical city advice attached to each corridor
-- **Dual routing engine** — built-in metro graph (offline-capable) or Google Maps (live)
-- **Autocomplete** — station and area suggestions as you type
-- **IBM Granite LLM** — Granite 3.3:2b via Ollama for intent extraction and reply generation
+- Ask by voice or text in English, Kannada, Hindi or Tamil
+- City-wide routes using Google Maps transit data (BMTC buses, Namma Metro, walking)
+- Fastest and cheapest options, plus a direct auto/cab estimate
+- Step-by-step directions spoken back in the selected language
+- Offline fallback: metro-only routing and rule-based replies
 
----
-
-## How It Works
+## How it works
 
 ```
-User speaks / types
-       │
-       ▼
-  POST /ask  ──► intent.extract()      (LLM call 1 — JSON: from, to, preference)
-       │
-       ▼
-  planner.get_options()                (metro graph or Google Maps)
-       │
-       ▼
-  responder.narrate()                  (LLM call 2 — friendly directions in chosen language)
-       │
-       ▼
-  {reply, result}  ──► browser speaks the reply aloud
+Voice / text
+   → IBM Granite (via Ollama): understands the question
+   → Google Maps Routes API: finds bus and metro options
+     (fallback: built-in offline metro graph)
+   → IBM Granite: writes the directions in the user's language
+   → Browser speaks the reply
 ```
 
-The LLM never invents route data. It only extracts structured intent and reformats verified route data into natural language.
+The model never invents routes or fares. It only understands the question and phrases the answer from real route data.
 
----
+## A note on the model
 
-## Getting Started
+This prototype deliberately uses a **small, lightweight model**: IBM Granite 3.3 (2B) running locally through Ollama. No frontier or cloud LLMs are used. This keeps it free to run, private and usable on a normal laptop, at the cost of some answer quality (see Limitations).
+
+## Getting started
 
 **Prerequisites**
-
 - Python 3.10+
-- [Ollama](https://ollama.ai) running locally with a Granite model pulled:
-  ```
-  ollama pull granite3.3:2b
-  ```
-- (Optional) A Google Maps Platform API key with Directions and Places enabled
+- [Ollama](https://ollama.com) with `ollama pull granite3.3:2b`
+- Google Cloud project with **Routes API** and **Places API (New)** enabled, and a restricted API key (optional; without it the app uses offline metro routing)
 
-**Install**
-
+**Setup**
 ```bash
 git clone <repo-url>
 cd namma-route-buddy
 python -m venv venv
-source venv/bin/activate       # Windows: venv\Scripts\activate
+source venv/bin/activate
 pip install -r requirements.txt
-```
-
-**Configure**
-
-```bash
-cp .env.example .env
-# Edit .env — set OLLAMA_URL and optionally GOOGLE_MAPS_API_KEY
+cp .env.example .env      # add your GOOGLE_MAPS_API_KEY
 ```
 
 **Run**
-
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --reload-dir app --reload-dir web
 ```
+Open http://localhost:8000 in Chrome (needed for voice input).
 
-Open `http://localhost:8000` in Chrome or Edge (required for Web Speech API).
+## Limitations
 
----
+This is an early prototype and there is a lot to improve:
 
-## Configuration
-
-| Variable | Default | Description |
-|---|---|---|
-| `OLLAMA_URL` | `http://localhost:11434` | Ollama server base URL |
-| `INTENT_MODEL` | `granite3.3:2b` | Model used for intent extraction (LLM call 1) |
-| `REPLY_MODEL` | `granite3.3:2b` | Model used for reply generation (LLM call 2) |
-| `GOOGLE_MAPS_API_KEY` | _(empty)_ | Enables live Google Maps routing; leave blank for metro graph |
-| `CACHE_TTL_SECONDS` | `300` | How long to cache route results (0 = no cache) |
-| `DEBUG` | `false` | Enables `GET /debug/route` diagnostic endpoint |
-
----
-
-## Route Evaluation
-
-Run the evaluation script against a live server to validate the routing engine across five reference corridors:
-
-```bash
-# Default: runs against http://localhost:8000, departure = now
-python tests/eval_routes.py
-
-# Custom server and departure time (IST)
-python tests/eval_routes.py --url http://localhost:8000 --time 09:00
-```
-
-No assertions are made — output is a human-readable table for manual review. Exit code is always 0.
-
----
-
-## Project Structure
-
-```
-namma-route-buddy/
-├── app/
-│   ├── main.py               FastAPI factory; mounts /css, /js; serves web/index.html
-│   ├── config.py             All settings read from environment
-│   ├── models.py             Pydantic request models
-│   ├── api/
-│   │   └── routes.py         All API endpoints: /route, /ask, /places, /autocomplete
-│   ├── engines/
-│   │   ├── metro_graph.py    Dijkstra over metro.json — offline, no API key needed
-│   │   └── google_routes.py  Google Maps Directions API — live, requires API key
-│   ├── llm/
-│   │   ├── ollama.py         Ollama chat client
-│   │   └── rule_based.py     Template fallback when Ollama is unavailable
-│   ├── services/
-│   │   ├── intent.py         extract() — LLM call 1, returns {from, to, preference}
-│   │   ├── planner.py        get_options() — dispatches to the active routing engine
-│   │   └── responder.py      narrate() — LLM call 2, formats reply in user's language
-│   └── utils/
-│       └── cache.py          Simple TTL cache keyed on route parameters
-├── web/
-│   ├── index.html            Slim HTML shell
-│   ├── css/styles.css        All styling
-│   └── js/
-│       ├── app.js            UI logic, rendering, event wiring (ES module)
-│       ├── api.js            Fetch wrappers for all backend endpoints
-│       └── voice.js          Web Speech API: mic input + speech synthesis
-├── data/
-│   ├── metro.json            Bengaluru metro graph (stations, lines, fares)
-│   └── areas.json            Neighbourhoods and landmarks for autocomplete
-├── tests/
-│   └── eval_routes.py        Manual route evaluation script (5 corridors)
-├── docs/
-│   └── screenshot.png        UI screenshot placeholder
-├── requirements.txt
-├── .env.example
-└── README.md
-```
-
----
+- **Small model:** Kannada and Tamil replies can be less natural than English or Hindi, and follow-up questions are sometimes misunderstood.
+- **Voice input:** relies on the browser's speech recognition. Place names spoken in Kannada or Tamil script are not always matched correctly; English place names work best.
+- **Fares:** come from Google Maps where available; auto and cab fares are rough estimates.
+- **No live data:** no real-time bus or metro arrivals yet.
+- **Offline mode** covers only the metro network and a limited set of areas.
+- **Speech output** depends on the voices installed on your device; Kannada and Tamil voices may be missing.
+- Tested mainly in Chrome on desktop.
 
 ## Roadmap
 
-- Real BMTC bus schedule integration (GTFS feed)
-- Namma Metro real-time arrivals via official API
-- Persistent conversation sessions (Valkey)
-- PWA offline mode with cached metro graph
-- More Indian languages (Telugu, Malayalam)
+- Live bus and metro arrivals
+- Better multilingual place-name matching
+- More Indian languages
+- WhatsApp / phone (IVR) access for feature phones
 
----
+## Project structure
 
-## Hackathon Background
-
-Namma Route Buddy was built for the **IBM Granite Hackathon 2024**. The goal was to explore whether a small, locally-run LLM (IBM Granite 3.3:2b via Ollama) could provide genuinely useful transit guidance in multiple Indian languages without requiring any cloud API for inference.
-
-The LLM is used only for two narrow tasks — structured intent extraction and friendly reply narration — keeping the routing logic deterministic and verifiable. This architecture means the app degrades gracefully: if Ollama is unavailable, rule-based fallbacks handle both tasks.
-
----
+```
+app/        FastAPI backend (api, services, route engines, LLM clients)
+web/        Frontend (HTML, CSS, JS, voice)
+data/       Offline metro network and area data
+tests/      Route evaluation script
+docs/       Screenshots
+```
 
 ## Credits
 
-- Routing data: [Google Maps Platform](https://developers.google.com/maps) (live mode) / built-in metro graph (offline mode)
-- LLM inference: [IBM Granite](https://www.ibm.com/granite) via [Ollama](https://ollama.ai)
-- UI design system inspired by [Carbon Design System](https://carbondesignsystem.com)
-- Metro network data: [Namma Metro](https://english.bmrcl.in/)
+- Built with **IBM Bob**
+- Language model: **IBM Granite** via Ollama
+- Routes: **Google Maps Platform**
