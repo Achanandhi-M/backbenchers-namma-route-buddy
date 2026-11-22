@@ -1,0 +1,167 @@
+{
+  "lines": {
+    "Purple": {
+      "color": "#8a3ffc",
+      "terminus_a": "Challaghatta",
+      "terminus_b": "Whitefield (Kadugodi)",
+      "stations": [
+        "Challaghatta",
+        "Vijayanagar",
+        "Attiguppe",
+        "Deepanjali Nagar",
+        "Mysore Road",
+        "Mysore Road (TTMC)",
+        "Magadi Road",
+        "City Railway Station",
+        "Kempegowda (Majestic)",
+        "Chickpete",
+        "Krishna Rajendra Market",
+        "National College",
+        "Lalbagh",
+        "South End Circle",
+        "Jayanagar",
+        "RV Road",
+        "Banashankari",
+        "Jp Nagar",
+        "Yelachenahalli",
+        "Konanakunte Cross",
+        "Doddakallasandra",
+        "Vajarahalli",
+        "Thalaghattapura",
+        "Silk Institute"
+      ],
+      "note": "Western spur Challaghatta–Silk Institute; eastern spur follows Purple Line east from Majestic"
+    },
+    "PurpleEast": {
+      "color": "#8a3ffc",
+      "terminus_a": "Kempegowda (Majestic)",
+      "terminus_b": "Whitefield (Kadugodi)",
+      "stations": [
+        "Kempegowda (Majestic)",
+        "MG Road",
+        "Trinity",
+        "Halasuru",
+        "Indiranagar",
+        "Swami Vivekananda Road",
+        "Baiyappanahalli",
+        "Krishnarajapura",
+        "Benniganahalli",
+        "Hoodi Junction",
+        "Garudacharapalya",
+        "Doddanekundi",
+        "Vibhutipura",
+        "ITPL (Whitefield Road)",
+        "Pattandur Agrahara",
+        "Kadugodi",
+        "Whitefield (Kadugodi)"
+      ]
+    },
+    "Green": {
+      "color": "#198038",
+      "terminus_a": "Madavara",
+      "terminus_b": "Silk Institute",
+      "stations": [
+        "Madavara",
+        "Chikkabidarakallu",
+        "Manjunathanagar",
+        "Nagasandra",
+        "Dasarahalli",
+        "Jalahalli",
+        "Peenya Industry",
+        "Peenya",
+        "Goraguntepalya",
+        "Yeshwanthpur",
+        "Sandal Soap Factory",
+        "Mahalakshmi",
+        "Rajajinagar",
+        "Kuvempu Road",
+        "Srirampura",
+        "Mantri Square Sampige Road",
+        "Kempegowda (Majestic)",
+        "Chickpete",
+        "City Market",
+        "Shivajinagar",
+        "Cantonment",
+        "Cubbon Park",
+        "MG Road",
+        "Trinity",
+        "Halasuru",
+        "Indiranagar",
+        "Swami Vivekananda Road",
+        "Baiyappanahalli"
+      ],
+      "note": "Green Line shares Majestic–Baiyappanahalli with Purple Line eastern corridor"
+    },
+    "Yellow": {
+      "color": "#f1c21b",
+      "terminus_a": "RV Road",
+      "terminus_b": "Bommasandra",
+      "stations": [
+        "RV Road",
+        "Jayanagar (Yellow)",
+        "Rashtriya Vidyalaya Road",
+        "Bannerghatta Road",
+        "JP Nagar (Yellow)",
+        "Gottigere",
+        "Hulimavu",
+        "Meenakshi Temple",
+        "Begur Road",
+        "Hosa Road",
+        "Electronic City",
+        "Hebbagodi",
+        "Bommasandra"
+      ],
+      "note": "Yellow Line Phase 1 operational; runs along Bannerghatta–Electronic City corridor"
+    }
+  },
+  "interchanges": [
+    {
+      "name": "Kempegowda (Majestic)",
+      "lines": ["Purple", "PurpleEast", "Green"],
+      "transfer_time_min": 3
+    },
+    {
+      "name": "MG Road",
+      "lines": ["PurpleEast", "Green"],
+      "transfer_time_min": 2
+    },
+    {
+      "name": "Trinity",
+      "lines": ["PurpleEast", "Green"],
+      "transfer_time_min": 2
+    },
+    {
+      "name": "Halasuru",
+      "lines": ["PurpleEast", "Green"],
+      "transfer_time_min": 2
+    },
+    {
+      "name": "Indiranagar",
+      "lines": ["PurpleEast", "Green"],
+      "transfer_time_min": 2
+    },
+    {
+      "name": "Swami Vivekananda Road",
+      "lines": ["PurpleEast", "Green"],
+      "transfer_time_min": 2
+    },
+    {
+      "name": "Baiyappanahalli",
+      "lines": ["PurpleEast", "Green"],
+      "transfer_time_min": 2
+    },
+    {
+      "name": "RV Road",
+      "lines": ["Purple", "Yellow"],
+      "transfer_time_min": 3
+    }
+  ],
+  "fare_slabs": [
+    {"max_stops": 2,  "fare_inr": 10},
+    {"max_stops": 5,  "fare_inr": 20},
+    {"max_stops": 8,  "fare_inr": 30},
+    {"max_stops": 12, "fare_inr": 40},
+    {"max_stops": 18, "fare_inr": 50},
+    {"max_stops": 99, "fare_inr": 60}
+  ]
+}
