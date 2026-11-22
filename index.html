@@ -32,43 +32,24 @@ body {
   flex-shrink: 0;
 }
 .header-left { display: flex; align-items: center; gap: 0.75rem; }
-.header-product {
-  font-size: 0.875rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}
+.header-product { font-size: 0.875rem; font-weight: 600; letter-spacing: 0.01em; white-space: nowrap; }
 .header-right { display: flex; align-items: center; gap: 0.75rem; }
 .granite-tag {
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: #a8a8a8;
-  border: 1px solid #393939;
-  border-radius: 2px;
-  padding: 2px 6px;
-  white-space: nowrap;
+  font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.04em;
+  color: #a8a8a8; border: 1px solid #393939; border-radius: 2px;
+  padding: 2px 6px; white-space: nowrap;
 }
 .lang-select {
-  background: #262626;
-  color: #f4f4f4;
-  border: 1px solid #393939;
-  border-radius: 0;
-  padding: 4px 24px 4px 8px;
-  font-family: inherit;
-  font-size: 0.75rem;
-  appearance: none;
+  background: #262626; color: #f4f4f4; border: 1px solid #393939; border-radius: 0;
+  padding: 4px 24px 4px 8px; font-family: inherit; font-size: 0.75rem; appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23a8a8a8' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  cursor: pointer;
+  background-repeat: no-repeat; background-position: right 8px center; cursor: pointer;
 }
 
 /* ── Layout ──────────────────────────────────────────────────────────────── */
 .layout {
   display: grid;
   grid-template-columns: 380px 1fr;
-  gap: 0;
   flex: 1;
   min-height: 0;
 }
@@ -92,241 +73,152 @@ body {
   overflow-y: auto;
 }
 
-/* ── Section headers ──────────────────────────────────────────────────────── */
+/* ── Section label ───────────────────────────────────────────────────────── */
 .section-label {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #525252;
-  padding: 1rem 1rem 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
+  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.08em;
+  text-transform: uppercase; color: #525252;
+  padding: 1rem 1rem 0.5rem; border-bottom: 1px solid #e0e0e0;
 }
 
-/* ── Input group ─────────────────────────────────────────────────────────── */
+/* ── Inputs ──────────────────────────────────────────────────────────────── */
 .input-group { padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
-
 .input-row { position: relative; }
-.input-label {
-  display: block;
-  font-size: 0.75rem;
-  color: #525252;
-  margin-bottom: 0.25rem;
-}
+.input-label { display: block; font-size: 0.75rem; color: #525252; margin-bottom: 0.25rem; }
 .carbon-input {
-  width: 100%;
-  padding: 0.625rem 2.5rem 0.625rem 0.75rem;
-  background: #f4f4f4;
-  border: none;
-  border-bottom: 1px solid #8d8d8d;
-  font-family: inherit;
-  font-size: 0.875rem;
-  color: #161616;
-  outline: none;
-  transition: border-color 0.1s;
+  width: 100%; padding: 0.625rem 0.75rem;
+  background: #f4f4f4; border: none; border-bottom: 1px solid #8d8d8d;
+  font-family: inherit; font-size: 0.875rem; color: #161616; outline: none;
 }
 .carbon-input:focus { border-bottom-color: #0f62fe; background: #fff; }
 .carbon-input::placeholder { color: #a8a8a8; }
 
 /* autocomplete */
 .autocomplete-list {
-  position: absolute;
-  top: 100%;
-  left: 0; right: 0;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-top: none;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 100;
-  display: none;
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: #fff; border: 1px solid #e0e0e0; border-top: none;
+  max-height: 200px; overflow-y: auto; z-index: 100; display: none;
 }
 .autocomplete-list.open { display: block; }
-.autocomplete-item {
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  cursor: pointer;
-  color: #161616;
-}
+.autocomplete-item { padding: 0.5rem 0.75rem; font-size: 0.875rem; cursor: pointer; color: #161616; }
 .autocomplete-item:hover, .autocomplete-item.active { background: #e8f1ff; }
 
-/* swap button */
-.swap-row {
-  display: flex;
-  justify-content: flex-end;
-  padding: 0 1rem;
-  margin-top: -0.25rem;
-}
+/* swap */
+.swap-row { display: flex; justify-content: flex-end; padding: 0 1rem; margin-top: -0.25rem; }
 .icon-btn {
-  background: none;
-  border: 1px solid #e0e0e0;
-  padding: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #525252;
-  border-radius: 2px;
+  background: none; border: 1px solid #e0e0e0; padding: 6px; cursor: pointer;
+  display: flex; align-items: center; color: #525252; border-radius: 2px;
 }
 .icon-btn:hover { background: #e8e8e8; color: #161616; }
 
-/* ── Tabs ────────────────────────────────────────────────────────────────── */
-.tabs { display: flex; border-bottom: 1px solid #e0e0e0; padding: 0 1rem; gap: 0; }
-.tab-btn {
-  padding: 0.625rem 1rem;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 500;
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-  color: #525252;
-  margin-bottom: -1px;
-}
-.tab-btn.active { color: #161616; border-bottom-color: #0f62fe; }
-
 /* ── Action row ──────────────────────────────────────────────────────────── */
-.action-row {
-  padding: 1rem;
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
+.action-row { padding: 1rem; display: flex; gap: 0.5rem; align-items: center; }
 .btn-primary {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  background: #0f62fe;
-  color: #fff;
-  border: none;
-  font-family: inherit;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  flex: 1; padding: 0.75rem 1rem; background: #0f62fe; color: #fff;
+  border: none; font-family: inherit; font-size: 0.875rem; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
 }
 .btn-primary:hover { background: #0353e9; }
 .btn-primary:disabled { background: #a8a8a8; cursor: not-allowed; }
 
 .mic-btn {
-  width: 44px;
-  height: 44px;
-  background: #393939;
-  color: #f4f4f4;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
+  width: 44px; height: 44px; background: #393939; color: #f4f4f4;
+  border: none; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
 }
 .mic-btn:hover { background: #4c4c4c; }
 .mic-btn.listening { background: #da1e28; animation: mic-pulse 1s infinite; }
-@keyframes mic-pulse {
-  0%,100% { opacity: 1; }
-  50%      { opacity: 0.6; }
-}
+@keyframes mic-pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
 
-/* ── Free-text question box ─────────────────────────────────────────────── */
-.question-wrap {
-  padding: 0 1rem 1rem;
-  display: flex;
-  gap: 0.5rem;
-}
+/* ── Question box ────────────────────────────────────────────────────────── */
+.question-wrap { padding: 0 1rem 1rem; display: flex; gap: 0.5rem; }
 .question-input {
-  flex: 1;
-  padding: 0.5rem 0.75rem;
-  background: #f4f4f4;
-  border: none;
-  border-bottom: 1px solid #8d8d8d;
-  font-family: inherit;
-  font-size: 0.8125rem;
-  color: #161616;
-  outline: none;
+  flex: 1; padding: 0.5rem 0.75rem; background: #f4f4f4; border: none;
+  border-bottom: 1px solid #8d8d8d; font-family: inherit; font-size: 0.8125rem;
+  color: #161616; outline: none;
 }
 .question-input:focus { border-bottom-color: #0f62fe; background: #fff; }
 .question-input::placeholder { color: #a8a8a8; }
 .btn-ghost {
-  padding: 0.5rem 0.75rem;
-  background: none;
-  border: 1px solid #e0e0e0;
-  font-family: inherit;
-  font-size: 0.8125rem;
-  cursor: pointer;
-  color: #161616;
+  padding: 0.5rem 0.75rem; background: none; border: 1px solid #e0e0e0;
+  font-family: inherit; font-size: 0.8125rem; cursor: pointer; color: #161616;
 }
 .btn-ghost:hover { background: #e8e8e8; }
 
-/* ── Mic status ──────────────────────────────────────────────────────────── */
-.mic-status {
-  font-size: 0.75rem;
-  color: #525252;
-  padding: 0 1rem 0.5rem;
-  min-height: 1rem;
-}
+.mic-status { font-size: 0.75rem; color: #525252; padding: 0 1rem 0.5rem; min-height: 1rem; }
 
-/* ── Right panel ─────────────────────────────────────────────────────────── */
+/* ── Empty / loading states ──────────────────────────────────────────────── */
 .empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  color: #525252;
-  padding: 2rem;
-  text-align: center;
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 1rem; color: #525252; padding: 2rem; text-align: center;
 }
 .empty-state svg { opacity: 0.3; }
 .empty-title { font-size: 1rem; font-weight: 500; color: #525252; }
 .empty-desc  { font-size: 0.8125rem; color: #8d8d8d; max-width: 240px; }
 
-/* loading */
 .loading-state {
-  flex: 1;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  color: #525252;
+  flex: 1; display: none; flex-direction: column;
+  align-items: center; justify-content: center; gap: 0.75rem;
 }
 .loading-state.visible { display: flex; }
 .spinner {
-  width: 32px; height: 32px;
-  border: 3px solid #e0e0e0;
-  border-top-color: #0f62fe;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  width: 32px; height: 32px; border: 3px solid #e0e0e0;
+  border-top-color: #0f62fe; border-radius: 50%; animation: spin 0.7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-label { font-size: 0.8125rem; color: #525252; }
 
-/* result panel */
-.result-panel { display: none; flex-direction: column; gap: 0; }
+/* ── Result panel ────────────────────────────────────────────────────────── */
+.result-panel { display: none; flex-direction: column; }
 .result-panel.visible { display: flex; }
 
-/* summary row */
-.summary-row {
-  background: #fff;
-  border-bottom: 1px solid #e0e0e0;
-  padding: 1rem;
-  display: flex;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-.summary-stat { display: flex; flex-direction: column; gap: 0.125rem; }
-.summary-value {
-  font-size: 1.25rem;
-  font-weight: 600;
+/* ── Fallback note ───────────────────────────────────────────────────────── */
+.fallback-note {
+  margin: 0.75rem 1rem 0;
+  background: #fff8e1;
+  border-left: 3px solid #f1c21b;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
   color: #161616;
 }
-.summary-label { font-size: 0.6875rem; color: #525252; text-transform: uppercase; letter-spacing: 0.06em; }
 
-/* reply bubble */
+/* ── Option cards ────────────────────────────────────────────────────────── */
+.options-row {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  background: #fff;
+  border-bottom: 1px solid #e0e0e0;
+  scrollbar-width: none;
+}
+.options-row::-webkit-scrollbar { display: none; }
+.option-card {
+  flex-shrink: 0;
+  min-width: 110px;
+  padding: 0.625rem 0.75rem;
+  background: #f4f4f4;
+  border: 1.5px solid #e0e0e0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: border-color 0.1s, background 0.1s;
+}
+.option-card:hover { background: #e8f1ff; border-color: #0f62fe; }
+.option-card.active { background: #edf5ff; border-color: #0f62fe; }
+.option-card.auto-card { border-color: #ff832b; }
+.option-card.auto-card.active { background: #fff3ec; }
+.option-label {
+  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.04em;
+  text-transform: uppercase; color: #525252;
+}
+.option-card.active .option-label { color: #0f62fe; }
+.option-card.auto-card .option-label { color: #ff832b; }
+.option-time { font-size: 1rem; font-weight: 600; color: #161616; }
+.option-meta { font-size: 0.6875rem; color: #525252; }
+.auto-approx { font-size: 0.6rem; color: #ff832b; font-weight: 500; letter-spacing: 0.04em; }
+
+/* ── Reply box ───────────────────────────────────────────────────────────── */
 .reply-box {
   margin: 1rem;
   background: #fff;
@@ -338,107 +230,60 @@ body {
   position: relative;
 }
 .listen-btn {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background: none;
-  border: 1px solid #e0e0e0;
-  padding: 4px 8px;
-  font-family: inherit;
-  font-size: 0.75rem;
-  cursor: pointer;
-  color: #525252;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  position: absolute; top: 0.75rem; right: 0.75rem;
+  background: none; border: 1px solid #e0e0e0; padding: 4px 8px;
+  font-family: inherit; font-size: 0.75rem; cursor: pointer; color: #525252;
+  display: flex; align-items: center; gap: 4px;
 }
 .listen-btn:hover { background: #f4f4f4; }
 
-/* timeline */
-.timeline { padding: 0 1rem 1rem; display: flex; flex-direction: column; gap: 0; }
-.tl-step {
-  display: flex;
-  gap: 0.75rem;
-  position: relative;
+/* ── Tip box ─────────────────────────────────────────────────────────────── */
+.tip-box {
+  margin: 0 1rem 1rem; background: #edf5ff; border-left: 3px solid #0f62fe;
+  padding: 0.75rem 1rem; font-size: 0.8125rem; color: #161616; line-height: 1.5;
 }
-.tl-line-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex-shrink: 0;
-  width: 20px;
+.tip-label {
+  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: #0f62fe; margin-bottom: 4px;
 }
-.tl-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  border: 2px solid #8d8d8d;
-  background: #fff;
-  flex-shrink: 0;
-  margin-top: 4px;
-  z-index: 1;
-}
-.tl-connector {
-  width: 2px;
-  flex: 1;
-  background: #e0e0e0;
-  min-height: 24px;
-}
-.tl-body {
-  flex: 1;
-  padding-bottom: 1.25rem;
-}
+
+/* ── Timeline ────────────────────────────────────────────────────────────── */
+.timeline { padding: 0 1rem 1rem; display: flex; flex-direction: column; }
+.tl-step  { display: flex; gap: 0.75rem; }
+.tl-line-wrap { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 20px; }
+.tl-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid #8d8d8d; background: #fff; flex-shrink: 0; margin-top: 4px; z-index: 1; }
+.tl-connector { width: 2px; flex: 1; background: #e0e0e0; min-height: 24px; }
+.tl-body { flex: 1; padding-bottom: 1.25rem; }
 .tl-mode-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  border-left: 3px solid #8d8d8d;
-  margin-bottom: 4px;
-  background: #f4f4f4;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  padding: 2px 6px; border-left: 3px solid #8d8d8d; margin-bottom: 4px; background: #f4f4f4;
+}
+.tl-line-num {
+  font-size: 0.75rem; font-weight: 700; color: inherit;
 }
 .tl-desc { font-size: 0.875rem; color: #161616; line-height: 1.5; }
 .tl-meta { font-size: 0.75rem; color: #525252; margin-top: 2px; }
-.tl-interchange {
-  font-size: 0.75rem;
-  color: #0f62fe;
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
+.tl-interchange { font-size: 0.75rem; color: #0f62fe; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
 
-/* tip notification */
-.tip-box {
-  margin: 0 1rem 1rem;
-  background: #edf5ff;
-  border-left: 3px solid #0f62fe;
-  padding: 0.75rem 1rem;
-  font-size: 0.8125rem;
-  color: #161616;
-  line-height: 1.5;
-}
-.tip-label {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #0f62fe;
-  margin-bottom: 4px;
-}
-
-/* error box */
+/* ── Error box ───────────────────────────────────────────────────────────── */
 .error-box {
-  margin: 1rem;
-  background: #fff1f1;
-  border-left: 3px solid #da1e28;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  color: #161616;
+  margin: 1rem; background: #fff1f1; border-left: 3px solid #da1e28;
+  padding: 0.75rem 1rem; font-size: 0.875rem; color: #161616;
 }
+
+/* ── Footer ──────────────────────────────────────────────────────────────── */
+.app-footer {
+  background: #fff;
+  border-top: 1px solid #e0e0e0;
+  padding: 0.5rem 1rem;
+  font-size: 0.6875rem;
+  color: #8d8d8d;
+  text-align: center;
+  flex-shrink: 0;
+}
+.app-footer a { color: #525252; text-decoration: none; }
+.app-footer a:hover { text-decoration: underline; }
 </style>
 </head>
 <body>
@@ -466,42 +311,30 @@ body {
 <!-- Main layout -->
 <div class="layout">
 
-  <!-- Left panel: inputs -->
+  <!-- Left panel -->
   <div class="panel-left">
     <div class="section-label">Plan your journey</div>
 
     <div class="input-group">
-      <!-- From -->
-      <div class="input-row" id="fromRow">
+      <div class="input-row">
         <label class="input-label" for="fromInput">From</label>
-        <input type="text" id="fromInput" class="carbon-input" placeholder="Station or area" autocomplete="off" aria-autocomplete="list" aria-controls="fromList">
+        <input type="text" id="fromInput" class="carbon-input" placeholder="Station, area or landmark" autocomplete="off">
         <div class="autocomplete-list" id="fromList" role="listbox"></div>
       </div>
-
-      <!-- Swap -->
       <div class="swap-row">
-        <button class="icon-btn" id="swapBtn" title="Swap origin and destination" aria-label="Swap">
+        <button class="icon-btn" id="swapBtn" title="Swap" aria-label="Swap origin and destination">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M11 2v10M11 12l-3-3M11 12l3-3M5 14V4M5 4L2 7M5 4l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
       </div>
-
-      <!-- To -->
-      <div class="input-row" id="toRow">
+      <div class="input-row">
         <label class="input-label" for="toInput">To</label>
-        <input type="text" id="toInput" class="carbon-input" placeholder="Station or area" autocomplete="off" aria-autocomplete="list" aria-controls="toList">
+        <input type="text" id="toInput" class="carbon-input" placeholder="Station, area or landmark" autocomplete="off">
         <div class="autocomplete-list" id="toList" role="listbox"></div>
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="tabs" role="tablist">
-      <button class="tab-btn active" id="tabCheapest" role="tab" aria-selected="true">Cheapest</button>
-      <button class="tab-btn" id="tabFastest" role="tab" aria-selected="false">Fastest</button>
-    </div>
-
-    <!-- Search action row -->
     <div class="action-row">
       <button class="btn-primary" id="searchBtn">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -520,17 +353,15 @@ body {
     </div>
     <div class="mic-status" id="micStatus" aria-live="polite"></div>
 
-    <!-- Free-text question -->
     <div class="question-wrap">
       <input type="text" id="questionInput" class="question-input" placeholder="Or ask a question...">
       <button class="btn-ghost" id="questionBtn">Ask</button>
     </div>
   </div>
 
-  <!-- Right panel: results -->
-  <div class="panel-right" id="rightPanel">
+  <!-- Right panel -->
+  <div class="panel-right">
 
-    <!-- Empty state -->
     <div class="empty-state" id="emptyState">
       <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
         <circle cx="24" cy="24" r="22" stroke="#8d8d8d" stroke-width="1.5"/>
@@ -540,49 +371,47 @@ body {
       <div class="empty-desc">Select a start and end point, or speak your question using the microphone.</div>
     </div>
 
-    <!-- Loading state -->
     <div class="loading-state" id="loadingState">
       <div class="spinner"></div>
       <div class="loading-label">Computing route...</div>
     </div>
 
-    <!-- Result -->
     <div class="result-panel" id="resultPanel">
-      <!-- Summary -->
-      <div class="summary-row" id="summaryRow"></div>
-      <!-- Reply -->
+      <div id="fallbackNote" class="fallback-note" style="display:none"></div>
+      <div class="options-row" id="optionsRow"></div>
       <div class="reply-box" id="replyBox">
         <button class="listen-btn" id="listenBtn">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M2 2l8 4-8 4V2z" fill="currentColor"/>
-          </svg>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 4-8 4V2z" fill="currentColor"/></svg>
           Listen
         </button>
         <div id="replyText"></div>
       </div>
-      <!-- Tip -->
       <div class="tip-box" id="tipBox" style="display:none">
         <div class="tip-label">Newcomer Tip</div>
         <div id="tipText"></div>
       </div>
-      <!-- Timeline -->
       <div class="timeline" id="timeline"></div>
-      <!-- Error -->
-      <div class="error-box" id="errorBox" style="display:none" id="errorBox"></div>
+      <div class="error-box" id="errorBox" style="display:none"></div>
     </div>
 
   </div>
 </div>
 
+<!-- Footer (required Google Maps attribution) -->
+<footer class="app-footer">
+  Routes by <a href="https://maps.google.com" target="_blank" rel="noopener">Google Maps</a>
+  &nbsp;·&nbsp; Multilingual narration by IBM Granite
+</footer>
+
 <script>
 // ── State ─────────────────────────────────────────────────────────────────────
-let allPlaces = [];
-let history   = [];
-let pref      = "cheapest";
-let speaking  = false;
+let allPlaces   = [];
+let history     = [];
+let speaking    = false;
 let recognition = null;
+let currentOptions = [];
 
-// ── Boot ──────────────────────────────────────────────────────────────────────
+// ── Boot: fetch autocomplete ──────────────────────────────────────────────────
 (async () => {
   try {
     const r = await fetch('/places');
@@ -592,41 +421,28 @@ let recognition = null;
 })();
 
 // ── DOM refs ──────────────────────────────────────────────────────────────────
-const fromInput    = document.getElementById('fromInput');
-const toInput      = document.getElementById('toInput');
-const fromList     = document.getElementById('fromList');
-const toList       = document.getElementById('toList');
-const swapBtn      = document.getElementById('swapBtn');
-const searchBtn    = document.getElementById('searchBtn');
-const micBtn       = document.getElementById('micBtn');
-const micStatus    = document.getElementById('micStatus');
+const fromInput     = document.getElementById('fromInput');
+const toInput       = document.getElementById('toInput');
+const fromList      = document.getElementById('fromList');
+const toList        = document.getElementById('toList');
+const swapBtn       = document.getElementById('swapBtn');
+const searchBtn     = document.getElementById('searchBtn');
+const micBtn        = document.getElementById('micBtn');
+const micStatus     = document.getElementById('micStatus');
 const questionInput = document.getElementById('questionInput');
-const questionBtn  = document.getElementById('questionBtn');
-const langSelect   = document.getElementById('langSelect');
-const tabCheapest  = document.getElementById('tabCheapest');
-const tabFastest   = document.getElementById('tabFastest');
-const emptyState   = document.getElementById('emptyState');
-const loadingState = document.getElementById('loadingState');
-const resultPanel  = document.getElementById('resultPanel');
-const summaryRow   = document.getElementById('summaryRow');
-const replyText    = document.getElementById('replyText');
-const listenBtn    = document.getElementById('listenBtn');
-const tipBox       = document.getElementById('tipBox');
-const tipText      = document.getElementById('tipText');
-const timeline     = document.getElementById('timeline');
-const errorBox     = document.getElementById('errorBox');
-
-// ── Tabs ──────────────────────────────────────────────────────────────────────
-tabCheapest.addEventListener('click', () => {
-  pref = 'cheapest';
-  tabCheapest.classList.add('active');    tabCheapest.setAttribute('aria-selected', 'true');
-  tabFastest.classList.remove('active');  tabFastest.setAttribute('aria-selected', 'false');
-});
-tabFastest.addEventListener('click', () => {
-  pref = 'fastest';
-  tabFastest.classList.add('active');     tabFastest.setAttribute('aria-selected', 'true');
-  tabCheapest.classList.remove('active'); tabCheapest.setAttribute('aria-selected', 'false');
-});
+const questionBtn   = document.getElementById('questionBtn');
+const langSelect    = document.getElementById('langSelect');
+const emptyState    = document.getElementById('emptyState');
+const loadingState  = document.getElementById('loadingState');
+const resultPanel   = document.getElementById('resultPanel');
+const fallbackNote  = document.getElementById('fallbackNote');
+const optionsRow    = document.getElementById('optionsRow');
+const replyText     = document.getElementById('replyText');
+const listenBtn     = document.getElementById('listenBtn');
+const tipBox        = document.getElementById('tipBox');
+const tipText       = document.getElementById('tipText');
+const timeline      = document.getElementById('timeline');
+const errorBox      = document.getElementById('errorBox');
 
 // ── Swap ──────────────────────────────────────────────────────────────────────
 swapBtn.addEventListener('click', () => {
@@ -636,177 +452,201 @@ swapBtn.addEventListener('click', () => {
 // ── Autocomplete ──────────────────────────────────────────────────────────────
 function setupAutocomplete(input, list) {
   let activeIdx = -1;
-
   input.addEventListener('input', () => {
     const q = input.value.toLowerCase();
-    list.innerHTML = '';
-    activeIdx = -1;
+    list.innerHTML = ''; activeIdx = -1;
     if (q.length < 1) { list.classList.remove('open'); return; }
     const matches = allPlaces.filter(p => p.toLowerCase().includes(q)).slice(0, 10);
     if (!matches.length) { list.classList.remove('open'); return; }
-    matches.forEach((name, i) => {
+    matches.forEach(name => {
       const item = document.createElement('div');
-      item.className = 'autocomplete-item';
-      item.setAttribute('role', 'option');
+      item.className = 'autocomplete-item'; item.setAttribute('role','option');
       item.textContent = name;
-      item.addEventListener('mousedown', e => {
-        e.preventDefault();
-        input.value = name;
-        list.classList.remove('open');
-      });
+      item.addEventListener('mousedown', e => { e.preventDefault(); input.value = name; list.classList.remove('open'); });
       list.appendChild(item);
     });
     list.classList.add('open');
   });
-
   input.addEventListener('keydown', e => {
     const items = list.querySelectorAll('.autocomplete-item');
     if (!items.length) return;
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      activeIdx = Math.min(activeIdx + 1, items.length - 1);
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      activeIdx = Math.max(activeIdx - 1, -1);
-    } else if (e.key === 'Enter' && activeIdx >= 0) {
-      input.value = items[activeIdx].textContent;
-      list.classList.remove('open');
-      return;
-    } else if (e.key === 'Escape') {
-      list.classList.remove('open'); return;
-    }
+    if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx+1, items.length-1); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx-1, -1); }
+    else if (e.key === 'Enter' && activeIdx >= 0) { input.value = items[activeIdx].textContent; list.classList.remove('open'); return; }
+    else if (e.key === 'Escape') { list.classList.remove('open'); return; }
     items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
   });
-
   input.addEventListener('blur', () => { setTimeout(() => list.classList.remove('open'), 150); });
 }
 setupAutocomplete(fromInput, fromList);
 setupAutocomplete(toInput,   toList);
 
-// ── UI helpers ────────────────────────────────────────────────────────────────
+// ── UI state helpers ──────────────────────────────────────────────────────────
 function showLoading() {
-  emptyState.style.display   = 'none';
+  emptyState.style.display = 'none';
   loadingState.classList.add('visible');
   resultPanel.classList.remove('visible');
   errorBox.style.display = 'none';
 }
-function showEmpty() {
-  emptyState.style.display   = 'flex';
-  loadingState.classList.remove('visible');
-  resultPanel.classList.remove('visible');
-}
 function showResult() {
-  emptyState.style.display   = 'none';
+  emptyState.style.display = 'none';
   loadingState.classList.remove('visible');
   resultPanel.classList.add('visible');
 }
 
+// ── Mode styling ──────────────────────────────────────────────────────────────
 function modeColor(type, line) {
   if (type === 'metro') {
-    const colors = { Purple:'#8a3ffc', PurpleEast:'#8a3ffc', Green:'#198038', Yellow:'#f1c21b' };
-    return colors[line] || '#8a3ffc';
+    const c = { Purple:'#8a3ffc', PurpleEast:'#8a3ffc', Green:'#198038', Yellow:'#f1c21b' };
+    return c[line] || '#8a3ffc';
   }
-  if (type === 'walk') return '#8d8d8d';
-  if (type === 'auto') return '#ff832b';
+  if (type === 'bus')   return '#198038';
+  if (type === 'train') return '#6929c4';
+  if (type === 'walk')  return '#8d8d8d';
+  if (type === 'auto')  return '#ff832b';
   return '#8d8d8d';
 }
 
-function modeIcon(type) {
-  if (type === 'metro') return svg_metro();
-  if (type === 'walk')  return svg_walk();
-  if (type === 'auto')  return svg_auto();
+function modeLabel(leg) {
+  const t = leg.type;
+  if (t === 'metro') return (leg.line === 'PurpleEast' ? 'Purple' : (leg.line || 'Metro')) + ' Line';
+  if (t === 'bus')   return leg.line_display ? `Bus ${leg.line_display}` : 'Bus';
+  if (t === 'train') return 'Train';
+  if (t === 'walk')  return 'Walk';
+  if (t === 'auto')  return 'Auto';
+  return t;
+}
+
+function svgForMode(type) {
+  if (type === 'metro' || type === 'train')
+    return `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.3"/><circle cx="3.5" cy="8.5" r="1" fill="currentColor"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/><path d="M1 6h10" stroke="currentColor" stroke-width="1.2"/></svg>`;
+  if (type === 'bus')
+    return `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.3"/><circle cx="3" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="9" r="1" fill="currentColor"/><path d="M1 5h10M5 2v3M7 2v3" stroke="currentColor" stroke-width="1.1"/></svg>`;
+  if (type === 'walk')
+    return `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="2" r="1.2" fill="currentColor"/><path d="M4 5l1.5-2 2 2.5-1 2 2 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 7L4 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`;
+  if (type === 'auto')
+    return `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 8V5l2-3h4l2 3v3H2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="3.5" cy="8.5" r="1" fill="currentColor"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/></svg>`;
   return '';
 }
 
-function svg_metro() {
-  return `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="7" rx="2" stroke="currentColor" stroke-width="1.2"/><circle cx="3.5" cy="8.5" r="1" fill="currentColor"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/><path d="M1 6h10" stroke="currentColor" stroke-width="1.2"/></svg>`;
-}
-function svg_walk() {
-  return `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="2" r="1.2" fill="currentColor"/><path d="M4 5l1.5-2 2 2.5-1 2 2 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 7L4 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`;
-}
-function svg_auto() {
-  return `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 8V5l2-3h4l2 3v3H2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="3.5" cy="8.5" r="1" fill="currentColor"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/></svg>`;
-}
-function svg_interchange() {
-  return `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="#0f62fe" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+// ── Option cards ──────────────────────────────────────────────────────────────
+function renderOptionCards(options, activeIdx, onSelect) {
+  optionsRow.innerHTML = '';
+  options.forEach((opt, i) => {
+    const isAuto = opt.label === 'Direct Auto';
+    const card = document.createElement('div');
+    card.className = 'option-card' + (isAuto ? ' auto-card' : '') + (i === activeIdx ? ' active' : '');
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    const fareStr = opt.total_fare_inr ? `₹${opt.total_fare_inr}` : '—';
+    const xferStr = opt.interchange_count === 0 ? 'Direct' : `${opt.interchange_count} change${opt.interchange_count > 1 ? 's' : ''}`;
+    card.innerHTML = `
+      <div class="option-label">${opt.label}</div>
+      <div class="option-time">${opt.total_time_min} min</div>
+      <div class="option-meta">${fareStr} &nbsp;· &nbsp;${xferStr}</div>
+      ${isAuto ? '<div class="auto-approx">APPROX</div>' : ''}`;
+    card.addEventListener('click', () => onSelect(i));
+    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') onSelect(i); });
+    optionsRow.appendChild(card);
+  });
 }
 
-// ── Render route ──────────────────────────────────────────────────────────────
-function renderRoute(route, reply) {
-  // summary
-  summaryRow.innerHTML = `
-    <div class="summary-stat">
-      <div class="summary-value">${route.total_time_min} min</div>
-      <div class="summary-label">Total time</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-value">&#8377;${route.total_fare_inr}</div>
-      <div class="summary-label">Approx fare</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-value">${route.interchange_count}</div>
-      <div class="summary-label">Interchange${route.interchange_count !== 1 ? 's' : ''}</div>
-    </div>
-    <div class="summary-stat">
-      <div class="summary-value">${route.origin} &rarr; ${route.destination}</div>
-      <div class="summary-label">Route</div>
-    </div>`;
-
-  // reply
-  replyText.textContent = reply;
-
-  // tip
-  if (route.newcomer_tip) {
-    tipText.textContent = route.newcomer_tip;
-    tipBox.style.display = 'block';
-  } else {
-    tipBox.style.display = 'none';
-  }
-
-  // timeline
+// ── Timeline for one option ───────────────────────────────────────────────────
+function renderTimeline(option) {
   timeline.innerHTML = '';
-  const legs = route.legs || [];
+  const legs = option.legs || [];
   legs.forEach((leg, i) => {
     const isLast = i === legs.length - 1;
     const color  = modeColor(leg.type, leg.line);
-    const icon   = modeIcon(leg.type);
-    const lineName = leg.type === 'metro'
-      ? (leg.line === 'PurpleEast' ? 'Purple' : leg.line) + ' Line'
-      : leg.type === 'walk' ? 'Walk' : 'Auto';
-    const metaStr = `${leg.time_min} min${leg.fare_inr ? ' &nbsp;· &nbsp;&#8377;' + leg.fare_inr : ''}${leg.type === 'metro' ? ' &nbsp;· &nbsp;' + leg.stops + ' stops' : ''}${leg.type === 'walk' ? ' &nbsp;· &nbsp;' + leg.walk_km + ' km' : ''}`;
-    const desc = leg.type === 'metro'
-      ? `${leg.from} &rarr; ${leg.to}${leg.direction ? ' <span style="color:#525252">(' + leg.direction + ')</span>' : ''}`
-      : `${leg.from} &rarr; ${leg.to}`;
+    const label  = modeLabel(leg);
+    const icon   = svgForMode(leg.type);
+    const lineNum = (leg.type === 'bus' && leg.line_display) ? `<span class="tl-line-num">${leg.line_display}</span>` : '';
+
+    const metaParts = [`${leg.time_min} min`];
+    if (leg.fare_inr)   metaParts.push(`₹${leg.fare_inr}`);
+    if (leg.type === 'metro' || leg.type === 'bus') metaParts.push(`${leg.stops} stops`);
+    if (leg.walk_km)    metaParts.push(`${leg.walk_km} km`);
+    const metaStr = metaParts.join(' · ');
+
+    const desc = (leg.from && leg.to)
+      ? `${leg.from} &rarr; ${leg.to}${leg.direction ? ` <span style="color:#525252">(${leg.direction})</span>` : ''}`
+      : (leg.instruction || '');
 
     const step = document.createElement('div');
     step.className = 'tl-step';
     step.innerHTML = `
       <div class="tl-line-wrap">
-        <div class="tl-dot" style="border-color:${color}; background:${color}"></div>
-        ${!isLast ? `<div class="tl-connector" style="background:${color}22"></div>` : ''}
+        <div class="tl-dot" style="border-color:${color};background:${color}"></div>
+        ${!isLast ? `<div class="tl-connector" style="background:${color}33"></div>` : ''}
       </div>
       <div class="tl-body">
-        <div class="tl-mode-badge" style="border-left-color:${color}; color:${color}">
-          ${icon} ${lineName}
+        <div class="tl-mode-badge" style="border-left-color:${color};color:${color}">
+          ${icon} ${label} ${lineNum}
         </div>
         <div class="tl-desc">${desc}</div>
         <div class="tl-meta">${metaStr}</div>
-        ${leg.is_interchange ? `<div class="tl-interchange">${svg_interchange()} Change at ${leg.interchange_at}</div>` : ''}
+        ${leg.is_interchange ? `<div class="tl-interchange"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M7 3l3 3-3 3" stroke="#0f62fe" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Change at ${leg.interchange_at}</div>` : ''}
       </div>`;
     timeline.appendChild(step);
   });
+}
+
+// ── Full render ───────────────────────────────────────────────────────────────
+let _currentResult = null;
+let _currentReply  = '';
+let _activeOptIdx  = 0;
+
+function renderResult(result, reply) {
+  _currentResult = result;
+  _currentReply  = reply;
+  _activeOptIdx  = 0;
+
+  // Fallback note
+  if (result.fallback_note) {
+    fallbackNote.textContent = result.fallback_note;
+    fallbackNote.style.display = 'block';
+  } else {
+    fallbackNote.style.display = 'none';
+  }
+
+  // Option cards
+  renderOptionCards(result.options, 0, selectOption);
+
+  // Reply
+  replyText.textContent = reply;
+
+  // Tip
+  if (result.newcomer_tip) {
+    tipText.textContent = result.newcomer_tip;
+    tipBox.style.display = 'block';
+  } else {
+    tipBox.style.display = 'none';
+  }
+
+  // Timeline for first option
+  if (result.options && result.options.length) {
+    renderTimeline(result.options[0]);
+  }
 
   errorBox.style.display = 'none';
   showResult();
 }
 
+function selectOption(idx) {
+  if (!_currentResult || !_currentResult.options[idx]) return;
+  _activeOptIdx = idx;
+  renderOptionCards(_currentResult.options, idx, selectOption);
+  renderTimeline(_currentResult.options[idx]);
+}
+
 function renderError(msg) {
   errorBox.textContent = msg;
   errorBox.style.display = 'block';
-  summaryRow.innerHTML  = '';
+  optionsRow.innerHTML  = '';
   replyText.textContent = '';
   tipBox.style.display  = 'none';
   timeline.innerHTML    = '';
+  fallbackNote.style.display = 'none';
   showResult();
 }
 
@@ -829,16 +669,16 @@ async function doRoute() {
     const data = await res.json();
     searchBtn.disabled = false;
 
-    if (data.route && data.route.not_found) {
-      renderError(data.route.not_found);
-      speakText(data.route.not_found);
-    } else if (data.route) {
-      renderRoute(data.route, data.reply);
+    if (data.result && data.result.not_found) {
+      renderError(data.result.not_found);
+      speakText(data.reply || data.result.not_found);
+    } else if (data.result && data.result.options && data.result.options.length) {
+      renderResult(data.result, data.reply);
       speakText(data.reply);
     } else {
       renderError('Could not compute a route. Please try different locations.');
     }
-  } catch (e) {
+  } catch {
     searchBtn.disabled = false;
     renderError('Could not reach the server. Please check that the app is running.');
   }
@@ -859,17 +699,16 @@ async function doQuestion(text) {
     });
     const data = await res.json();
     searchBtn.disabled = false;
-    history.push({ user: text, assistant: data.reply });
+    history.push({ user: text, assistant: data.reply || '' });
     if (history.length > 6) history = history.slice(-6);
 
-    if (data.route && data.route.not_found) {
-      renderError(data.route.not_found);
-      speakText(data.route.not_found);
-    } else if (data.route) {
-      // also fill form fields
-      fromInput.value = data.route.origin || '';
-      toInput.value   = data.route.destination || '';
-      renderRoute(data.route, data.reply);
+    if (data.result && data.result.not_found) {
+      renderError(data.result.not_found);
+      speakText(data.reply || '');
+    } else if (data.result && data.result.options && data.result.options.length) {
+      fromInput.value = data.result.origin || '';
+      toInput.value   = data.result.destination || '';
+      renderResult(data.result, data.reply);
       speakText(data.reply);
     } else {
       renderError(data.reply || 'Could not understand the question.');
@@ -892,13 +731,11 @@ function speakText(text) {
   if (!window.speechSynthesis) return;
   if (speaking) window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = langSelect.value;
-  utt.rate = 0.95;
+  utt.lang = langSelect.value; utt.rate = 0.95;
   speaking = true;
   utt.onend = () => { speaking = false; };
   window.speechSynthesis.speak(utt);
 }
-
 listenBtn.addEventListener('click', () => speakText(replyText.textContent));
 
 // ── Web Speech API ────────────────────────────────────────────────────────────
@@ -909,47 +746,28 @@ if (SpeechRec) {
   recognition = new SpeechRec();
   recognition.continuous = false;
   recognition.interimResults = true;
-
-  recognition.onstart = () => {
-    micBtn.classList.add('listening');
-    micStatus.textContent = 'Listening...';
-  };
-  recognition.onend = () => {
-    micBtn.classList.remove('listening');
-    isListening = false;
-    micStatus.textContent = '';
-  };
+  recognition.onstart = () => { micBtn.classList.add('listening'); micStatus.textContent = 'Listening...'; };
+  recognition.onend   = () => { micBtn.classList.remove('listening'); isListening = false; micStatus.textContent = ''; };
   recognition.onresult = e => {
     let interim = '', final = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) final += t;
-      else interim += t;
+      if (e.results[i].isFinal) final += t; else interim += t;
     }
     micStatus.textContent = interim || final;
-    if (final) {
-      questionInput.value = final;
-      doQuestion(final);
-    }
+    if (final) { questionInput.value = final; doQuestion(final); }
   };
   recognition.onerror = e => {
     micStatus.textContent = `Microphone error: ${e.error}`;
-    micBtn.classList.remove('listening');
-    isListening = false;
+    micBtn.classList.remove('listening'); isListening = false;
   };
-
   micBtn.addEventListener('click', () => {
-    if (isListening) {
-      recognition.stop();
-    } else {
-      recognition.lang = langSelect.value;
-      recognition.start();
-      isListening = true;
-    }
+    if (isListening) { recognition.stop(); }
+    else { recognition.lang = langSelect.value; recognition.start(); isListening = true; }
   });
 } else {
   micBtn.disabled = true;
-  micBtn.title = 'Speech recognition is not supported in this browser. Use Chrome or Edge.';
+  micBtn.title = 'Speech recognition not supported. Use Chrome or Edge.';
   micStatus.textContent = 'Speech not supported. Please use Chrome or Edge.';
 }
 </script>

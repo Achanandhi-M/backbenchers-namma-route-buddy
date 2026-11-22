@@ -1,7 +1,9 @@
 # Namma Route Buddy
 
-A voice-first, multilingual metro navigation assistant for newcomers to Bengaluru.
+A voice-first, multilingual transit assistant for newcomers to Bengaluru.
 Built for the IBM hackathon by **Team Backbenchers**.
+
+> **v0.1 release (hackathon build):** [github.com/Achanandhi-M/backbenchers-namma-route-buddy/releases/tag/v0.1](https://github.com/Achanandhi-M/backbenchers-namma-route-buddy/releases/tag/v0.1)
 
 ---
 
@@ -30,16 +32,15 @@ last-mile auto or walking directions, with fare and time estimates throughout.
 
 ## Solution
 
-Namma Route Buddy combines a deterministic metro graph engine with IBM Granite's language
-capabilities:
+**v2 (current):** Namma Route Buddy calls the Google Maps Routes API for real-world transit
+routing across metro, bus, and rail — returning up to 3 options (Fastest, Cheapest, Fewest
+transfers) plus a Direct Auto estimate. IBM Granite narrates the chosen option in the user's
+language. If the Google call fails or the key is not configured, the app falls back to the
+built-in Namma Metro graph engine transparently, showing a "metro-only route" note.
 
-- The route engine computes the shortest path across the full Namma Metro network using
-  Dijkstra's algorithm. It handles station aliases, fuzzy name matching for voice typos,
-  interchange penalties, and last-mile guidance for approximately 40 major Bengaluru areas.
-- IBM Granite 3.3 handles two focused language tasks: extracting structured intent
-  (origin, destination, preference) from a natural-language query, and narrating the
-  computed route in the user's chosen language.
-- The LLM never invents route data. All times, fares, and steps come from the graph engine.
+**v0.1 (hackathon build):** Metro graph engine only (Dijkstra over `data/metro.json`),
+covering the full Purple, Green, and Yellow lines with interchange penalties and last-mile
+guidance for approximately 40 Bengaluru areas.
 
 ---
 
@@ -47,14 +48,16 @@ capabilities:
 
 | Feature                  | Description                                                                 |
 |--------------------------|-----------------------------------------------------------------------------|
-| Full metro graph         | Purple, Green, and Yellow Namma Metro lines with interchange handling       |
+| Google Maps routing      | Real-world transit routes via Google Maps Routes API (metro, bus, rail)     |
+| Option cards             | Fastest, Cheapest, Fewest transfers, Direct Auto — click to view timeline   |
+| Metro graph fallback     | Dijkstra engine over full Purple/Green/Yellow network when Google is absent |
 | Last-mile guidance       | Walk or auto directions for ~40 Bengaluru areas and landmarks               |
 | Fuzzy name matching      | Handles voice typos and colloquial names via difflib                        |
-| Multilingual narration   | Directions delivered in English, Kannada, Hindi, or Tamil via IBM Granite   |
+| Multilingual narration   | Directions in English, Kannada, Hindi, or Tamil via IBM Granite             |
 | Voice input              | Web Speech API with language-aware recognition                              |
-| Voice output             | Auto-spoken replies via speechSynthesis with a Listen button               |
+| Voice output             | Auto-spoken replies via speechSynthesis with a Listen button                |
 | Autocomplete             | Station and area name suggestions from the known network                    |
-| Conversation history     | Follow-up questions resolved with context from prior turns                  |
+| Response caching         | 10-minute in-memory cache per (from, to, language) to reduce API calls      |
 | IBM Carbon design        | Clean, accessible UI following IBM Carbon design principles                 |
 
 ---
@@ -74,24 +77,29 @@ User speaks or types a query
          |       Extracts {"from", "to", "preference"}
          |       json_mode=True, temperature=0, retry once on parse failure
          |
-         +---> Metro Graph Engine  (engine.py)
-         |       Alias normalisation + fuzzy matching (difflib)
-         |       Dijkstra shortest path across Purple/Green/Yellow lines
-         |       Interchange penalty insertion
-         |       First-mile and last-mile legs (walk or auto)
-         |       Fare slab calculation by stop count
+         +---> routing_google.py  (primary)
+         |       POST routes.googleapis.com/directions/v2:computeRoutes
+         |       Maps transit steps → internal leg format
+         |       Labels options: Fastest / Cheapest / Fewest transfers
+         |       Appends Direct Auto estimate
+         |       In-memory cache 10 min per (from, to, lang)
+         |       On failure / timeout / no routes → falls back to engine.py
+         |
+         +---> engine.py  (fallback)
+         |       Dijkstra over data/metro.json (Purple/Green/Yellow lines)
+         |       Alias normalisation + difflib fuzzy matching
+         |       Interchange penalty, first/last-mile from data/areas.json
          |
          +---> IBM Granite 3.3 (multilingual narration)
                  "Reply ONLY in {language}. Use only the given route data."
                  Returns friendly step-by-step in the user's language
                          |
                          v
-               JSON { reply, route { legs, total_time, total_fare, ... } }
+               JSON { reply, result { options [ {label, legs, ...} ] } }
                          |
                          v
-               Two-column UI: summary row + step timeline + newcomer tip
-                         |
-                         v
+               Option cards row (click to switch timeline view)
+               Step timeline with per-mode coloured left borders
                speechSynthesis auto-speaks the reply
 ```
 
@@ -99,16 +107,17 @@ User speaks or types a query
 
 ## Tech Stack
 
-| Component          | Technology                                     |
-|--------------------|------------------------------------------------|
-| Backend            | Python 3.11, FastAPI, Uvicorn                  |
-| Route engine       | Pure Python, Dijkstra via heapq, difflib       |
-| LLM                | IBM Granite 3.3 2B via Ollama (local)          |
-| LLM client         | Custom `llm.py` over Ollama `/api/chat` REST   |
-| Frontend           | Vanilla JavaScript, IBM Plex Sans              |
-| Speech I/O         | Web Speech API (SpeechRecognition + synthesis) |
-| Data               | `data/metro.json` (network), `data/areas.json` |
-| Configuration      | python-dotenv                                  |
+| Component              | Technology                                            |
+|------------------------|-------------------------------------------------------|
+| Backend                | Python 3.11, FastAPI, Uvicorn                         |
+| Primary routing        | Google Maps Routes API v2 (`routing_google.py`)       |
+| Fallback routing       | Pure Python Dijkstra, heapq, difflib (`engine.py`)    |
+| LLM                    | IBM Granite 3.3 2B via Ollama (local)                 |
+| LLM client             | Custom `llm.py` over Ollama `/api/chat` REST          |
+| Frontend               | Vanilla JavaScript, IBM Plex Sans                     |
+| Speech I/O             | Web Speech API (SpeechRecognition + synthesis)        |
+| Data                   | `data/metro.json` (network), `data/areas.json`        |
+| Configuration          | python-dotenv                                         |
 
 ---
 
@@ -143,6 +152,17 @@ IBM Bob (the AI coding assistant) was the primary development accelerator throug
 
 - Python 3.9 or later
 - [Ollama](https://ollama.com) installed and running
+- A Google Cloud project with **Routes API** enabled (optional — the app works without it)
+
+### Google Cloud Setup (optional but recommended)
+
+1. Go to [console.cloud.google.com](https://console.cloud.google.com).
+2. Create a project (or select an existing one).
+3. Enable the **Routes API** (search "Routes API" in the API Library).
+4. Under **APIs & Services > Credentials**, create an API Key.
+5. Restrict the key: Application restrictions → HTTP referrers or IP addresses.
+   API restrictions → Routes API (and optionally Places API New for future use).
+6. Copy the key into your `.env` file as `GOOGLE_MAPS_API_KEY=<your key>`.
 
 ### 1. Pull the model
 
