@@ -1,10 +1,11 @@
 import os, json, re
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 from dotenv import load_dotenv
+import requests as _requests
 import llm
 import engine
 from engine import compute_route, route_to_dict, autocomplete_list
@@ -203,10 +204,58 @@ async def ask(req: AskRequest):
 
     return JSONResponse({"reply": reply, "result": result, "lang": req.lang})
 
-# ── /places endpoint ──────────────────────────────────────────────────────────
+# ── /places endpoint (static list for initial load) ──────────────────────────
 @app.get("/places")
 async def places():
     return JSONResponse({"places": autocomplete_list()})
+
+# ── /autocomplete endpoint (Places API New proxy) ─────────────────────────────
+_PLACES_URL = "https://places.googleapis.com/v1/places:autocomplete"
+_PLACES_FIELD_MASK = "suggestions.placePrediction.text,suggestions.placePrediction.placeId"
+
+@app.get("/autocomplete")
+async def autocomplete(q: str = Query("", min_length=1)):
+    api_key = os.getenv("GOOGLE_MAPS_API_KEY", "")
+    if not api_key or not q.strip():
+        # Fall back to local fuzzy list
+        from difflib import get_close_matches
+        all_places = autocomplete_list()
+        ql = q.strip().lower()
+        matches = [p for p in all_places if ql in p.lower()][:5]
+        return JSONResponse({"suggestions": matches, "source": "local"})
+
+    body = {
+        "input": q,
+        "locationBias": {
+            "circle": {
+                "center": {"latitude": 12.97, "longitude": 77.59},
+                "radius": 30000.0,
+            }
+        },
+        "includedRegionCodes": ["in"],
+        "languageCode": "en",
+    }
+    headers = {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": api_key,
+        "X-Goog-FieldMask": _PLACES_FIELD_MASK,
+    }
+    try:
+        resp = _requests.post(_PLACES_URL, json=body, headers=headers, timeout=5)
+        resp.raise_for_status()
+        data = resp.json()
+        suggestions = [
+            s["placePrediction"]["text"]["text"]
+            for s in data.get("suggestions", [])
+            if "placePrediction" in s
+        ][:5]
+        return JSONResponse({"suggestions": suggestions, "source": "google"})
+    except Exception:
+        # Graceful fallback to local list
+        all_places = autocomplete_list()
+        ql = q.strip().lower()
+        matches = [p for p in all_places if ql in p.lower()][:5]
+        return JSONResponse({"suggestions": matches, "source": "local"})
 
 # ── Serve frontend ─────────────────────────────────────────────────────────────
 @app.get("/", response_class=HTMLResponse)

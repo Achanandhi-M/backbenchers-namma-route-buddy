@@ -449,33 +449,62 @@ swapBtn.addEventListener('click', () => {
   [fromInput.value, toInput.value] = [toInput.value, fromInput.value];
 });
 
-// ── Autocomplete ──────────────────────────────────────────────────────────────
+// ── Autocomplete (Places API proxy, 300 ms debounce, max 5 results) ──────────
 function setupAutocomplete(input, list) {
   let activeIdx = -1;
-  input.addEventListener('input', () => {
-    const q = input.value.toLowerCase();
+  let debounceTimer = null;
+
+  async function fetchSuggestions(q) {
+    // For very short queries serve local list instantly
+    if (q.length <= 2) {
+      const local = allPlaces.filter(p => p.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+      if (local.length) return local;
+    }
+    try {
+      const r = await fetch(`/autocomplete?q=${encodeURIComponent(q)}`);
+      const d = await r.json();
+      return (d.suggestions || []).slice(0, 5);
+    } catch {
+      return allPlaces.filter(p => p.toLowerCase().includes(q.toLowerCase())).slice(0, 5);
+    }
+  }
+
+  function renderList(names) {
     list.innerHTML = ''; activeIdx = -1;
-    if (q.length < 1) { list.classList.remove('open'); return; }
-    const matches = allPlaces.filter(p => p.toLowerCase().includes(q)).slice(0, 10);
-    if (!matches.length) { list.classList.remove('open'); return; }
-    matches.forEach(name => {
+    if (!names.length) { list.classList.remove('open'); return; }
+    names.forEach(name => {
       const item = document.createElement('div');
-      item.className = 'autocomplete-item'; item.setAttribute('role','option');
+      item.className = 'autocomplete-item'; item.setAttribute('role', 'option');
       item.textContent = name;
-      item.addEventListener('mousedown', e => { e.preventDefault(); input.value = name; list.classList.remove('open'); });
+      item.addEventListener('mousedown', e => {
+        e.preventDefault(); input.value = name; list.classList.remove('open');
+      });
       list.appendChild(item);
     });
     list.classList.add('open');
+  }
+
+  input.addEventListener('input', () => {
+    const q = input.value.trim();
+    list.innerHTML = ''; activeIdx = -1;
+    if (q.length < 1) { list.classList.remove('open'); return; }
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(async () => {
+      renderList(await fetchSuggestions(q));
+    }, 300);
   });
+
   input.addEventListener('keydown', e => {
     const items = list.querySelectorAll('.autocomplete-item');
     if (!items.length) return;
     if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx+1, items.length-1); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx-1, -1); }
-    else if (e.key === 'Enter' && activeIdx >= 0) { input.value = items[activeIdx].textContent; list.classList.remove('open'); return; }
-    else if (e.key === 'Escape') { list.classList.remove('open'); return; }
+    else if (e.key === 'Enter' && activeIdx >= 0) {
+      input.value = items[activeIdx].textContent; list.classList.remove('open'); return;
+    } else if (e.key === 'Escape') { list.classList.remove('open'); return; }
     items.forEach((el, i) => el.classList.toggle('active', i === activeIdx));
   });
+
   input.addEventListener('blur', () => { setTimeout(() => list.classList.remove('open'), 150); });
 }
 setupAutocomplete(fromInput, fromList);
