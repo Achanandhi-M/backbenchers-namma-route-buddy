@@ -23,11 +23,14 @@ class AskRequest(BaseModel):
     text: str
     lang: Optional[str] = "en-IN"
     history: Optional[list] = []
+    departure_time: Optional[str] = None   # RFC 3339; None = now
 
 class RouteRequest(BaseModel):
     from_place: str
     to_place: str
     lang: Optional[str] = "en-IN"
+    departure_time: Optional[str] = None   # RFC 3339; None = now
+    preference: Optional[str] = "any"      # "cheapest" | "fastest" | "any"
 
 # ── Intent extraction ─────────────────────────────────────────────────────────
 def extract_intent(text: str, history: list) -> dict:
@@ -68,18 +71,27 @@ def narrate_option(option: dict, origin: str, destination: str, lang: str, fallb
     legs_text = []
     for i, leg in enumerate(option.get("legs", []), 1):
         t = leg.get("type", "")
+        # Use fare_label if present, fall back to fare_inr
+        fare_str = leg.get("fare_label") or (f"₹{leg.get('fare_inr',0)}" if leg.get("fare_inr") else "")
+        # Boarding-point vocabulary based on vehicle type
+        from_pt = "metro station" if t == "metro" else "bus stop" if t == "bus" else ""
+        from_str = f"{leg.get('from','')} {from_pt}".strip() if from_pt else leg.get("from", "")
+        to_str   = f"{leg.get('to','')} {from_pt}".strip()   if from_pt else leg.get("to",   "")
         if t == "metro":
             legs_text.append(
                 f"Step {i}: Board {leg.get('line','')} Line {leg.get('direction','')} "
-                f"from {leg.get('from','')} to {leg.get('to','')} "
-                f"({leg.get('stops',0)} stops, ~{leg.get('time_min',0)} min, ₹{leg.get('fare_inr',0)})"
+                f"at {from_str}, alight at {to_str} "
+                f"({leg.get('stops',0)} stops, ~{leg.get('time_min',0)} min"
+                + (f", {fare_str}" if fare_str else "") + ")"
             )
             if leg.get("is_interchange"):
                 legs_text.append(f"  Change lines at {leg.get('interchange_at','')}.")
         elif t == "bus":
             legs_text.append(
                 f"Step {i}: Board bus {leg.get('line_display', leg.get('line',''))} "
-                f"from {leg.get('from','')} to {leg.get('to','')} (~{leg.get('time_min',0)} min)"
+                f"at {from_str}, alight at {to_str} "
+                f"(~{leg.get('time_min',0)} min"
+                + (f", {fare_str}" if fare_str else "") + ")"
             )
         elif t == "walk":
             legs_text.append(
@@ -89,12 +101,21 @@ def narrate_option(option: dict, origin: str, destination: str, lang: str, fallb
         elif t == "auto":
             legs_text.append(
                 f"Step {i}: Take auto from {leg.get('from','')} to {leg.get('to','')} "
-                f"(~{leg.get('time_min',0)} min, ~₹{leg.get('fare_inr',0)})"
+                f"(~{leg.get('time_min',0)} min"
+                + (f", {fare_str}" if fare_str else "") + ")"
+            )
+        elif t == "cab":
+            legs_text.append(
+                f"Step {i}: Take a cab from {leg.get('from','')} to {leg.get('to','')} "
+                f"(~{leg.get('time_min',0)} min"
+                + (f", {fare_str}" if fare_str else "") + ")"
             )
 
+    # Use fare_label at option level if available
+    fare_summary = option.get("fare_label") or (f"₹{option.get('total_fare_inr',0)}" if option.get("total_fare_inr") else "—")
     summary = (
         f"Route: {origin} → {destination} ({option.get('label','')})\n"
-        f"Total: ~{option.get('total_time_min',0)} min, ~₹{option.get('total_fare_inr',0)}, "
+        f"Total: ~{option.get('total_time_min',0)} min, ~{fare_summary}, "
         f"{option.get('interchange_count',0)} transfer(s)\n\n"
         + "\n".join(legs_text)
     )
@@ -103,25 +124,46 @@ def narrate_option(option: dict, origin: str, destination: str, lang: str, fallb
 
     messages = [
         {"role": "system", "content": (
-            f"You are Namma Route Buddy, a warm Bengaluru transit assistant for newcomers. "
-            f"Reply ONLY in {lang_name}. Be short, friendly, and step-by-step. "
+            f"You are Namma Route Buddy, a Bengaluru transit assistant. "
+            f"Reply ONLY in {lang_name}. "
+            "Start directly with the first step — no greeting, no 'Sure', no 'Here are', no markdown bold. "
+            "Give at most 5 short numbered steps. "
             "Use ONLY the route data provided — never invent routes or fares."
         )},
-        {"role": "user", "content": f"Give friendly step-by-step directions:\n\n{summary}"},
+        {"role": "user", "content": f"Give step-by-step directions:\n\n{summary}"},
     ]
     return llm.chat(messages, REPLY_MODEL)
 
+def _pick_recommended(options: list, preference: str) -> int:
+    """
+    Return the index of the option to narrate and show selected in the UI.
+    - preference="cheapest": index of first option whose badge contains "Cheapest"
+    - otherwise: index of first option whose badge contains "Fastest"
+    - Falls back to index 0 if neither is found.
+    """
+    target_badge = "Cheapest" if preference == "cheapest" else "Fastest"
+    for i, o in enumerate(options):
+        if target_badge in o.get("badge", ""):
+            return i
+    # No badged option found (e.g. engine fallback with single option)
+    return 0
+
 # ── Core routing logic ────────────────────────────────────────────────────────
-def _get_options(from_place: str, to_place: str, lang: str) -> dict:
+def _get_options(from_place: str, to_place: str, lang: str, departure_time: Optional[str] = None) -> dict:
     """
     Try Google Maps first; fall back to metro engine.
     Returns: {source, origin, destination, options, fallback_note, newcomer_tip}
+      or:    {ambiguous, field, query, suggestions, source}
     """
-    google = routing_google.get_google_routes(from_place, to_place, lang)
+    google = routing_google.get_google_routes(from_place, to_place, lang, departure_time=departure_time)
+
+    # Pass ambiguity response straight through
+    if google and google.get("ambiguous"):
+        return google
 
     if google:
-        google["newcomer_tip"] = ""
-        google["fallback_note"] = None
+        google.setdefault("newcomer_tip", "")
+        google.setdefault("fallback_note", None)
         return google
 
     # Fallback to metro graph engine
@@ -161,7 +203,17 @@ def _get_options(from_place: str, to_place: str, lang: str) -> dict:
 # ── /route endpoint (structured) ─────────────────────────────────────────────
 @app.post("/route")
 async def route(req: RouteRequest):
-    result = _get_options(req.from_place, req.to_place, req.lang)
+    preference = (req.preference or "any").lower()
+    result = _get_options(req.from_place, req.to_place, req.lang, req.departure_time)
+
+    # Ambiguous place — ask user to clarify
+    if result.get("ambiguous"):
+        field   = result.get("field", "from")
+        query   = result.get("query", req.from_place if field == "from" else req.to_place)
+        suggs   = result.get("suggestions", [])
+        names   = [s["name"] for s in suggs[:3]]
+        reply   = f"I found multiple places matching \"{query}\". Did you mean: {', '.join(names) or query}?"
+        return JSONResponse({"reply": reply, "result": result, "lang": req.lang})
 
     if result.get("not_found"):
         lang_name = {"kn-IN": "Kannada", "hi-IN": "Hindi",
@@ -173,8 +225,11 @@ async def route(req: RouteRequest):
         reply = llm.chat(messages, REPLY_MODEL)
         return JSONResponse({"reply": reply, "result": result, "lang": req.lang})
 
-    # Narrate the first / "best" option
-    best = result["options"][0] if result["options"] else {}
+    options = result.get("options", [])
+    rec_idx = _pick_recommended(options, preference)
+    result["recommended_idx"] = rec_idx
+
+    best  = options[rec_idx] if options else {}
     reply = narrate_option(best, result["origin"], result["destination"],
                             req.lang, result.get("fallback_note"))
 
@@ -197,12 +252,51 @@ async def ask(req: AskRequest):
         reply = llm.chat(messages, REPLY_MODEL)
         return JSONResponse({"reply": reply, "result": None, "lang": req.lang})
 
-    result = _get_options(from_q, to_q, req.lang)
-    best = result["options"][0] if result.get("options") else {}
+    result = _get_options(from_q, to_q, req.lang, req.departure_time)
+
+    # Ambiguous place — surface to user
+    if result.get("ambiguous"):
+        field = result.get("field", "from")
+        query = result.get("query", from_q if field == "from" else to_q)
+        suggs = result.get("suggestions", [])
+        names = [s["name"] for s in suggs[:3]]
+        reply = f"I found multiple places matching \"{query}\". Did you mean: {', '.join(names) or query}?"
+        return JSONResponse({"reply": reply, "result": result, "lang": req.lang})
+
+    if result.get("not_found"):
+        lang_name = {"kn-IN": "Kannada", "hi-IN": "Hindi",
+                     "ta-IN": "Tamil",   "en-IN": "English"}.get(req.lang, "English")
+        messages = [
+            {"role": "system", "content": f"You are Namma Route Buddy. Reply ONLY in {lang_name}. Keep it to 2 sentences."},
+            {"role": "user",   "content": result["not_found"]},
+        ]
+        reply = llm.chat(messages, REPLY_MODEL)
+        return JSONResponse({"reply": reply, "result": result, "lang": req.lang})
+
+    options = result.get("options", [])
+    preference = intent.get("preference", "any") or "any"
+    rec_idx = _pick_recommended(options, preference)
+    result["recommended_idx"] = rec_idx
+
+    best  = options[rec_idx] if options else {}
     reply = narrate_option(best, result.get("origin", from_q), result.get("destination", to_q),
                             req.lang, result.get("fallback_note"))
 
     return JSONResponse({"reply": reply, "result": result, "lang": req.lang})
+
+# ── /debug/route endpoint (only active when DEBUG=true) ───────────────────────
+_DEBUG_MODE = os.getenv("DEBUG", "false").lower() == "true"
+
+@app.get("/debug/route")
+async def debug_route_endpoint(
+    from_place:     str = Query(..., alias="from"),
+    to_place:       str = Query(..., alias="to"),
+    departure_time: str = Query(None),
+):
+    if not _DEBUG_MODE:
+        return JSONResponse({"error": "Debug mode is disabled. Set DEBUG=true in .env."}, status_code=403)
+    result = routing_google.debug_route(from_place, to_place, departure_time=departure_time or None)
+    return JSONResponse(result)
 
 # ── /places endpoint (static list for initial load) ──────────────────────────
 @app.get("/places")

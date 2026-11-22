@@ -84,6 +84,7 @@ body {
 .input-group { padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
 .input-row { position: relative; }
 .input-label { display: block; font-size: 0.75rem; color: #525252; margin-bottom: 0.25rem; }
+.resolved-name { font-size: 0.6875rem; color: #0f62fe; margin-top: 0.2rem; padding-left: 2px; min-height: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .carbon-input {
   width: 100%; padding: 0.625rem 0.75rem;
   background: #f4f4f4; border: none; border-bottom: 1px solid #8d8d8d;
@@ -226,9 +227,13 @@ body {
 .option-card.active { background: #edf5ff; border-color: #0f62fe; }
 .option-card.auto-card { border-color: #ff832b; }
 .option-card.auto-card.active { background: #fff3ec; }
+.option-badge {
+  font-size: 0.625rem; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: #0f62fe; margin-bottom: 1px;
+}
+.option-card.auto-card .option-badge { color: #ff832b; }
 .option-label {
-  font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.04em;
-  text-transform: uppercase; color: #525252;
+  font-size: 0.75rem; font-weight: 500; color: #161616; line-height: 1.3;
 }
 .option-card.active .option-label { color: #0f62fe; }
 .option-card.auto-card .option-label { color: #ff832b; }
@@ -284,6 +289,12 @@ body {
 .tl-meta { font-size: 0.75rem; color: #525252; margin-top: 2px; }
 .tl-interchange { font-size: 0.75rem; color: #0f62fe; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
 
+/* ── Disambiguation card ─────────────────────────────────────────────────── */
+.disambig-card { margin: 0.75rem 1rem; background: #fff3cd; border-left: 3px solid #f1c21b; padding: 0.75rem; font-size: 0.8125rem; color: #161616; }
+.disambig-title { font-weight: 600; margin-bottom: 0.5rem; }
+.disambig-suggestion { display: inline-block; margin: 0.2rem 0.3rem 0.2rem 0; padding: 0.2rem 0.6rem; background: #fff; border: 1px solid #c6c6c6; border-radius: 2px; cursor: pointer; font-size: 0.8125rem; color: #0f62fe; }
+.disambig-suggestion:hover { background: #edf5ff; border-color: #0f62fe; }
+
 /* ── Error box ───────────────────────────────────────────────────────────── */
 .error-box {
   margin: 1rem; background: #fff1f1; border-left: 3px solid #da1e28;
@@ -338,6 +349,7 @@ body {
         <label class="input-label" for="fromInput">From</label>
         <input type="text" id="fromInput" class="carbon-input" placeholder="Station, area or landmark" autocomplete="off">
         <div class="autocomplete-list" id="fromList" role="listbox"></div>
+        <div class="resolved-name" id="fromResolved"></div>
       </div>
       <div class="swap-row">
         <button class="icon-btn" id="swapBtn" title="Swap" aria-label="Swap origin and destination">
@@ -350,6 +362,7 @@ body {
         <label class="input-label" for="toInput">To</label>
         <input type="text" id="toInput" class="carbon-input" placeholder="Station, area or landmark" autocomplete="off">
         <div class="autocomplete-list" id="toList" role="listbox"></div>
+        <div class="resolved-name" id="toResolved"></div>
       </div>
     </div>
 
@@ -400,6 +413,7 @@ body {
 
     <div class="result-panel" id="resultPanel">
       <div id="fallbackNote" class="fallback-note" style="display:none"></div>
+      <div id="disambigCard" class="disambig-card" style="display:none"></div>
       <div class="options-row" id="optionsRow"></div>
       <div class="reply-box" id="replyBox">
         <button class="listen-btn" id="listenBtn">
@@ -458,6 +472,7 @@ const emptyState    = document.getElementById('emptyState');
 const loadingState  = document.getElementById('loadingState');
 const resultPanel   = document.getElementById('resultPanel');
 const fallbackNote  = document.getElementById('fallbackNote');
+const disambigCard  = document.getElementById('disambigCard');
 const optionsRow    = document.getElementById('optionsRow');
 const replyText     = document.getElementById('replyText');
 const listenBtn     = document.getElementById('listenBtn');
@@ -465,6 +480,8 @@ const tipBox        = document.getElementById('tipBox');
 const tipText       = document.getElementById('tipText');
 const timeline      = document.getElementById('timeline');
 const errorBox      = document.getElementById('errorBox');
+const fromResolved  = document.getElementById('fromResolved');
+const toResolved    = document.getElementById('toResolved');
 
 // ── Swap ──────────────────────────────────────────────────────────────────────
 swapBtn.addEventListener('click', () => {
@@ -555,6 +572,7 @@ function modeColor(type, line) {
   if (type === 'train') return '#6929c4';
   if (type === 'walk')  return '#8d8d8d';
   if (type === 'auto')  return '#ff832b';
+  if (type === 'cab')   return '#e8740c';
   return '#8d8d8d';
 }
 
@@ -565,6 +583,7 @@ function modeLabel(leg) {
   if (t === 'train') return 'Train';
   if (t === 'walk')  return 'Walk';
   if (t === 'auto')  return 'Auto';
+  if (t === 'cab')   return 'Cab';
   return t;
 }
 
@@ -575,7 +594,7 @@ function svgForMode(type) {
     return `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.3"/><circle cx="3" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="9" r="1" fill="currentColor"/><path d="M1 5h10M5 2v3M7 2v3" stroke="currentColor" stroke-width="1.1"/></svg>`;
   if (type === 'walk')
     return `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="2" r="1.2" fill="currentColor"/><path d="M4 5l1.5-2 2 2.5-1 2 2 2.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 7L4 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`;
-  if (type === 'auto')
+  if (type === 'auto' || type === 'cab')
     return `<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 8V5l2-3h4l2 3v3H2z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="3.5" cy="8.5" r="1" fill="currentColor"/><circle cx="8.5" cy="8.5" r="1" fill="currentColor"/></svg>`;
   return '';
 }
@@ -584,18 +603,25 @@ function svgForMode(type) {
 function renderOptionCards(options, activeIdx, onSelect) {
   optionsRow.innerHTML = '';
   options.forEach((opt, i) => {
-    const isAuto = opt.label === 'Direct Auto';
+    // isAutoStyle: auto or cab option — orange accent card
+    const isAutoStyle = opt.legs && opt.legs.some(l => l.type === 'auto' || l.type === 'cab');
     const card = document.createElement('div');
-    card.className = 'option-card' + (isAuto ? ' auto-card' : '') + (i === activeIdx ? ' active' : '');
+    card.className = 'option-card' + (isAutoStyle ? ' auto-card' : '') + (i === activeIdx ? ' active' : '');
     card.setAttribute('role', 'button');
     card.setAttribute('tabindex', '0');
-    const fareStr = opt.total_fare_inr ? `₹${opt.total_fare_inr}` : '—';
+    const fareStr = opt.fare_label || (opt.total_fare_inr ? `₹${opt.total_fare_inr}` : '—');
     const xferStr = opt.interchange_count === 0 ? 'Direct' : `${opt.interchange_count} change${opt.interchange_count > 1 ? 's' : ''}`;
+    // Split badge and route_name for two-line display
+    const badge = opt.badge || '';
+    const rname = opt.route_name || opt.label || '';
+    const labelHtml = badge
+      ? `<div class="option-badge">${badge}</div><div class="option-label">${rname}</div>`
+      : `<div class="option-label">${rname}</div>`;
     card.innerHTML = `
-      <div class="option-label">${opt.label}</div>
+      ${labelHtml}
       <div class="option-time">${opt.total_time_min} min</div>
       <div class="option-meta">${fareStr} &nbsp;· &nbsp;${xferStr}</div>
-      ${isAuto ? '<div class="auto-approx">APPROX</div>' : ''}`;
+      ${isAutoStyle ? '<div class="auto-approx">APPROX</div>' : ''}`;
     card.addEventListener('click', () => onSelect(i));
     card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') onSelect(i); });
     optionsRow.appendChild(card);
@@ -614,7 +640,8 @@ function renderTimeline(option) {
     const lineNum = (leg.type === 'bus' && leg.line_display) ? `<span class="tl-line-num">${leg.line_display}</span>` : '';
 
     const metaParts = [`${leg.time_min} min`];
-    if (leg.fare_inr)   metaParts.push(`₹${leg.fare_inr}`);
+    if (leg.fare_label)      metaParts.push(leg.fare_label);
+    else if (leg.fare_inr)   metaParts.push(`₹${leg.fare_inr}`);
     if (leg.type === 'metro' || leg.type === 'bus') metaParts.push(`${leg.stops} stops`);
     if (leg.walk_km)    metaParts.push(`${leg.walk_km} km`);
     const metaStr = metaParts.join(' · ');
@@ -650,7 +677,17 @@ let _activeOptIdx  = 0;
 function renderResult(result, reply) {
   _currentResult = result;
   _currentReply  = reply;
-  _activeOptIdx  = 0;
+  // Use the server-computed recommended index (Fastest / Cheapest based on preference)
+  _activeOptIdx  = (typeof result.recommended_idx === 'number') ? result.recommended_idx : 0;
+
+  // Resolved place names under inputs
+  const rf = result.resolved_from;
+  const rt = result.resolved_to;
+  fromResolved.textContent = (rf && rf.display_name && rf.display_name !== fromInput.value) ? rf.display_name : '';
+  toResolved.textContent   = (rt && rt.display_name && rt.display_name !== toInput.value)   ? rt.display_name : '';
+
+  // Hide disambiguation
+  disambigCard.style.display = 'none';
 
   // Fallback note
   if (result.fallback_note) {
@@ -660,8 +697,8 @@ function renderResult(result, reply) {
     fallbackNote.style.display = 'none';
   }
 
-  // Option cards
-  renderOptionCards(result.options, 0, selectOption);
+  // Option cards — highlight the recommended option
+  renderOptionCards(result.options, _activeOptIdx, selectOption);
 
   // Reply
   replyText.textContent = reply;
@@ -674,9 +711,9 @@ function renderResult(result, reply) {
     tipBox.style.display = 'none';
   }
 
-  // Timeline for first option
+  // Timeline for recommended option
   if (result.options && result.options.length) {
-    renderTimeline(result.options[0]);
+    renderTimeline(result.options[_activeOptIdx]);
   }
 
   errorBox.style.display = 'none';
@@ -690,6 +727,31 @@ function selectOption(idx) {
   renderTimeline(_currentResult.options[idx]);
 }
 
+function renderDisambig(result, reply, field) {
+  const suggs = result.suggestions || [];
+  disambigCard.innerHTML = `
+    <div class="disambig-title">⚠️ ${reply}</div>
+    ${suggs.slice(0,3).map(s =>
+      `<span class="disambig-suggestion" data-name="${s.name}">${s.name}${s.address ? ' <span style="color:#525252;font-size:0.75rem">– ' + s.address.replace(/, India$/, '') + '</span>' : ''}</span>`
+    ).join('')}`;
+  disambigCard.querySelectorAll('.disambig-suggestion').forEach(el => {
+    el.addEventListener('click', () => {
+      const name = el.dataset.name;
+      if (field === 'from') { fromInput.value = name; fromResolved.textContent = ''; }
+      else                  { toInput.value   = name; toResolved.textContent   = ''; }
+      disambigCard.style.display = 'none';
+    });
+  });
+  disambigCard.style.display = 'block';
+  fallbackNote.style.display = 'none';
+  optionsRow.innerHTML  = '';
+  replyText.textContent = reply;
+  tipBox.style.display  = 'none';
+  timeline.innerHTML    = '';
+  errorBox.style.display = 'none';
+  showResult();
+}
+
 function renderError(msg) {
   errorBox.textContent = msg;
   errorBox.style.display = 'block';
@@ -698,6 +760,9 @@ function renderError(msg) {
   tipBox.style.display  = 'none';
   timeline.innerHTML    = '';
   fallbackNote.style.display = 'none';
+  disambigCard.style.display = 'none';
+  fromResolved.textContent = '';
+  toResolved.textContent   = '';
   showResult();
 }
 
@@ -720,7 +785,10 @@ async function doRoute() {
     const data = await res.json();
     searchBtn.disabled = false;
 
-    if (data.result && data.result.not_found) {
+    if (data.result && data.result.ambiguous) {
+      renderDisambig(data.result, data.reply, data.result.field);
+      speakText(data.reply);
+    } else if (data.result && data.result.not_found) {
       renderError(data.result.not_found);
       speakText(data.reply || data.result.not_found);
     } else if (data.result && data.result.options && data.result.options.length) {
@@ -753,7 +821,10 @@ async function doQuestion(text) {
     history.push({ user: text, assistant: data.reply || '' });
     if (history.length > 6) history = history.slice(-6);
 
-    if (data.result && data.result.not_found) {
+    if (data.result && data.result.ambiguous) {
+      renderDisambig(data.result, data.reply, data.result.field);
+      speakText(data.reply);
+    } else if (data.result && data.result.not_found) {
       renderError(data.result.not_found);
       speakText(data.reply || '');
     } else if (data.result && data.result.options && data.result.options.length) {
