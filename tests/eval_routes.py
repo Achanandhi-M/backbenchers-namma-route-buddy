@@ -51,7 +51,7 @@ CORRIDORS = [
         "id":   "silk_indiranagar",
         "from": "Silk Board",
         "to":   "Indiranagar",
-        "note": "Purple Line metro segment",
+        "note": "Bus route, no direct metro",
     },
     {
         "id":   "majestic_whitefield",

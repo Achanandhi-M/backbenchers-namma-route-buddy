@@ -1,243 +1,181 @@
 # Namma Route Buddy
 
-A voice-first, multilingual transit assistant for newcomers to Bengaluru.
-Built for the IBM hackathon by **Team Backbenchers**.
+A voice-first, multilingual transit assistant for Bengaluru newcomers. Ask your route in English, Kannada, Hindi, or Tamil; get spoken, step-by-step directions powered by IBM Granite and real-time Google Maps.
 
-> **v0.1 release (hackathon build):** [github.com/Achanandhi-M/backbenchers-namma-route-buddy/releases/tag/v0.1](https://github.com/Achanandhi-M/backbenchers-namma-route-buddy/releases/tag/v0.1)
+[![Watch the demo](docs/screenshot.png)](https://youtu.be/hOUCWMeTD_w)
 
----
-
-## Overview
-
-Finding your way around Bengaluru's growing metro network is non-trivial for new residents.
-Station names are unfamiliar, interchanges are unmarked, and last-mile connectivity
-(getting from a station to your actual destination) is rarely explained in one place.
-
-Namma Route Buddy solves this by letting users ask in plain language — spoken or typed,
-in English, Kannada, Hindi, or Tamil — and receiving a complete, step-by-step journey plan:
-first-mile guidance, metro legs with line and direction, interchange instructions, and
-last-mile auto or walking directions, with fare and time estimates throughout.
-
----
-
-## Problem
-
-- Newcomers to Bengaluru do not know station names or metro line colours.
-- Voice and text queries use colloquial names ("Silk Board", "EC", "KBS") that differ from
-  official station names.
-- No single tool combines metro route computation, multilingual narration, and voice I/O
-  in a lightweight, offline-capable package.
-
----
-
-## Solution
-
-**v2 (current):** Namma Route Buddy calls the Google Maps Routes API for real-world transit
-routing across metro, bus, and rail — returning up to 3 options (Fastest, Cheapest, Fewest
-transfers) plus a Direct Auto estimate. IBM Granite narrates the chosen option in the user's
-language. If the Google call fails or the key is not configured, the app falls back to the
-built-in Namma Metro graph engine transparently, showing a "metro-only route" note.
-
-**v0.1 (hackathon build):** Metro graph engine only (Dijkstra over `data/metro.json`),
-covering the full Purple, Green, and Yellow lines with interchange penalties and last-mile
-guidance for approximately 40 Bengaluru areas.
+Built for the IBM Granite Hackathon 2026.
 
 ---
 
 ## Features
 
-| Feature                  | Description                                                                 |
-|--------------------------|-----------------------------------------------------------------------------|
-| Google Maps routing      | Real-world transit routes via Google Maps Routes API (metro, bus, rail)     |
-| Option cards             | Fastest, Cheapest, Fewest transfers, Direct Auto — click to view timeline   |
-| Metro graph fallback     | Dijkstra engine over full Purple/Green/Yellow network when Google is absent |
-| Last-mile guidance       | Walk or auto directions for ~40 Bengaluru areas and landmarks               |
-| Fuzzy name matching      | Handles voice typos and colloquial names via difflib                        |
-| Multilingual narration   | Directions in English, Kannada, Hindi, or Tamil via IBM Granite             |
-| Voice input              | Web Speech API with language-aware recognition                              |
-| Voice output             | Auto-spoken replies via speechSynthesis with a Listen button                |
-| Autocomplete             | Station and area name suggestions from the known network                    |
-| Response caching         | 10-minute in-memory cache per (from, to, language) to reduce API calls      |
-| IBM Carbon design        | Clean, accessible UI following IBM Carbon design principles                 |
+- **Voice input** via the Web Speech API — speak your journey, hear the answer back
+- **Multilingual** — English, Kannada, Hindi, Tamil (kn-IN, hi-IN, ta-IN, en-IN)
+- **Free-text questions** — "How do I get from Silk Board to Whitefield cheapest?"
+- **Follow-up context** — conversation history passed to the LLM for multi-turn queries
+- **Route options** — fastest, cheapest, and recommended options with fare and time
+- **Step timeline** — per-leg breakdown: metro, bus, walk, auto — colour-coded by mode
+- **Newcomer tips** — practical city advice attached to each corridor
+- **Dual routing engine** — built-in metro graph (offline-capable) or Google Maps (live)
+- **Autocomplete** — station and area suggestions as you type
+- **IBM Granite LLM** — Granite 3.3:2b via Ollama for intent extraction and reply generation
 
 ---
 
-## Architecture
+## How It Works
 
 ```
-User speaks or types a query
-         |
-         v
-  Web Speech API (browser)
-         |  text + language + history
-         v
-  POST /ask or POST /route  (FastAPI)
-         |
-         +---> IBM Granite 3.3 (intent extraction)
-         |       Extracts {"from", "to", "preference"}
-         |       json_mode=True, temperature=0, retry once on parse failure
-         |
-         +---> routing_google.py  (primary)
-         |       POST routes.googleapis.com/directions/v2:computeRoutes
-         |       Maps transit steps → internal leg format
-         |       Labels options: Fastest / Cheapest / Fewest transfers
-         |       Appends Direct Auto estimate
-         |       In-memory cache 10 min per (from, to, lang)
-         |       On failure / timeout / no routes → falls back to engine.py
-         |
-         +---> engine.py  (fallback)
-         |       Dijkstra over data/metro.json (Purple/Green/Yellow lines)
-         |       Alias normalisation + difflib fuzzy matching
-         |       Interchange penalty, first/last-mile from data/areas.json
-         |
-         +---> IBM Granite 3.3 (multilingual narration)
-                 "Reply ONLY in {language}. Use only the given route data."
-                 Returns friendly step-by-step in the user's language
-                         |
-                         v
-               JSON { reply, result { options [ {label, legs, ...} ] } }
-                         |
-                         v
-               Option cards row (click to switch timeline view)
-               Step timeline with per-mode coloured left borders
-               speechSynthesis auto-speaks the reply
+User speaks / types
+       │
+       ▼
+  POST /ask  ──► intent.extract()      (LLM call 1 — JSON: from, to, preference)
+       │
+       ▼
+  planner.get_options()                (metro graph or Google Maps)
+       │
+       ▼
+  responder.narrate()                  (LLM call 2 — friendly directions in chosen language)
+       │
+       ▼
+  {reply, result}  ──► browser speaks the reply aloud
 ```
 
----
-
-## Tech Stack
-
-| Component              | Technology                                            |
-|------------------------|-------------------------------------------------------|
-| Backend                | Python 3.11, FastAPI, Uvicorn                         |
-| Primary routing        | Google Maps Routes API v2 (`routing_google.py`)       |
-| Fallback routing       | Pure Python Dijkstra, heapq, difflib (`engine.py`)    |
-| LLM                    | IBM Granite 3.3 2B via Ollama (local)                 |
-| LLM client             | Custom `llm.py` over Ollama `/api/chat` REST          |
-| Frontend               | Vanilla JavaScript, IBM Plex Sans                     |
-| Speech I/O             | Web Speech API (SpeechRecognition + synthesis)        |
-| Data                   | `data/metro.json` (network), `data/areas.json`        |
-| Configuration          | python-dotenv                                         |
-
----
-
-## How IBM Bob Was Used
-
-IBM Bob (the AI coding assistant) was the primary development accelerator throughout this project:
-
-- **Full-stack scaffolding** — Bob generated the initial FastAPI backend, single-file frontend,
-  and data schemas in one pass from a detailed specification, producing working code with no
-  manual editing required to run.
-- **Route engine design** — Bob designed and implemented `engine.py` from scratch: the weighted
-  graph construction from `metro.json`, Dijkstra with interchange penalty, segment merging into
-  multi-leg routes, last-mile resolution from `areas.json`, and the `route_to_dict` serialiser.
-- **Data authoring** — Bob authored `data/metro.json` (full Namma Metro network with all three
-  lines, interchange definitions, and fare slabs) and `data/areas.json` (approximately 40 areas
-  with nearest station mappings, last-mile mode, and fare estimates).
-- **Iterative stack migration** — When the backend was migrated from IBM watsonx.ai to local
-  Ollama, Bob extracted `llm.py`, rewrote all LLM call sites from prompt strings to chat
-  messages, and updated all configuration files in a single targeted diff set.
-- **UI rebuild** — Bob replaced the original chat-bubble UI with the IBM Carbon-style two-column
-  layout, implementing the step timeline with per-mode coloured left borders, the autocomplete
-  widget, the summary row, and the newcomer tip notification — all in vanilla JavaScript without
-  any framework dependency.
-- **Quality assurance** — Bob ran syntax checks on all Python files, validated JSON data files,
-  and confirmed no legacy watsonx references remained across the codebase after migration.
+The LLM never invents route data. It only extracts structured intent and reformats verified route data into natural language.
 
 ---
 
 ## Getting Started
 
-### Prerequisites
+**Prerequisites**
 
-- Python 3.9 or later
-- [Ollama](https://ollama.com) installed and running
-- A Google Cloud project with **Routes API** enabled (optional — the app works without it)
+- Python 3.10+
+- [Ollama](https://ollama.ai) running locally with a Granite model pulled:
+  ```
+  ollama pull granite3.3:2b
+  ```
+- (Optional) A Google Maps Platform API key with Directions and Places enabled
 
-### Google Cloud Setup (optional but recommended)
+**Install**
 
-1. Go to [console.cloud.google.com](https://console.cloud.google.com).
-2. Create a project (or select an existing one).
-3. Enable the **Routes API** (search "Routes API" in the API Library).
-4. Under **APIs & Services > Credentials**, create an API Key.
-5. Restrict the key: Application restrictions → HTTP referrers or IP addresses.
-   API restrictions → Routes API (and optionally Places API New for future use).
-6. Copy the key into your `.env` file as `GOOGLE_MAPS_API_KEY=<your key>`.
-
-### 1. Pull the model
-
-```
-ollama serve
-ollama pull granite3.3:2b
-```
-
-### 2. Enter the project directory
-
-```
+```bash
+git clone <repo-url>
 cd namma-route-buddy
-```
-
-### 3. Create a virtual environment and install dependencies
-
-```
-python3 -m venv .venv
-source .venv/bin/activate
+python -m venv venv
+source venv/bin/activate       # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Configure environment
+**Configure**
 
-```
+```bash
 cp .env.example .env
+# Edit .env — set OLLAMA_URL and optionally GOOGLE_MAPS_API_KEY
 ```
 
-Default `.env` values work with a local Ollama instance:
+**Run**
 
-```
-OLLAMA_URL=http://localhost:11434
-INTENT_MODEL=granite3.3:2b
-REPLY_MODEL=granite3.3:2b
-```
-
-### 5. Start the server
-
-```
-uvicorn main:app --reload --port 8000
+```bash
+uvicorn app.main:app --reload
 ```
 
 Open `http://localhost:8000` in Chrome or Edge (required for Web Speech API).
 
 ---
 
-## Example Queries
+## Configuration
 
-Structured form:
-- From: "Indiranagar" / To: "Electronic City"
-- From: "Manyata Tech Park" / To: "MG Road"
-- From: "Airport" / To: "Whitefield"
+| Variable | Default | Description |
+|---|---|---|
+| `OLLAMA_URL` | `http://localhost:11434` | Ollama server base URL |
+| `INTENT_MODEL` | `granite3.3:2b` | Model used for intent extraction (LLM call 1) |
+| `REPLY_MODEL` | `granite3.3:2b` | Model used for reply generation (LLM call 2) |
+| `GOOGLE_MAPS_API_KEY` | _(empty)_ | Enables live Google Maps routing; leave blank for metro graph |
+| `CACHE_TTL_SECONDS` | `300` | How long to cache route results (0 = no cache) |
+| `DEBUG` | `false` | Enables `GET /debug/route` diagnostic endpoint |
 
-Natural language (via the question box or microphone):
-- "How do I get from Majestic to Whitefield?"
-- "Fastest route from Yeshwanthpur to Cubbon Park"
-- "How to reach Koramangala from Baiyappanahalli?"
+---
+
+## Route Evaluation
+
+Run the evaluation script against a live server to validate the routing engine across five reference corridors:
+
+```bash
+# Default: runs against http://localhost:8000, departure = now
+python tests/eval_routes.py
+
+# Custom server and departure time (IST)
+python tests/eval_routes.py --url http://localhost:8000 --time 09:00
+```
+
+No assertions are made — output is a human-readable table for manual review. Exit code is always 0.
+
+---
+
+## Project Structure
+
+```
+namma-route-buddy/
+├── app/
+│   ├── main.py               FastAPI factory; mounts /css, /js; serves web/index.html
+│   ├── config.py             All settings read from environment
+│   ├── models.py             Pydantic request models
+│   ├── api/
+│   │   └── routes.py         All API endpoints: /route, /ask, /places, /autocomplete
+│   ├── engines/
+│   │   ├── metro_graph.py    Dijkstra over metro.json — offline, no API key needed
+│   │   └── google_routes.py  Google Maps Directions API — live, requires API key
+│   ├── llm/
+│   │   ├── ollama.py         Ollama chat client
+│   │   └── rule_based.py     Template fallback when Ollama is unavailable
+│   ├── services/
+│   │   ├── intent.py         extract() — LLM call 1, returns {from, to, preference}
+│   │   ├── planner.py        get_options() — dispatches to the active routing engine
+│   │   └── responder.py      narrate() — LLM call 2, formats reply in user's language
+│   └── utils/
+│       └── cache.py          Simple TTL cache keyed on route parameters
+├── web/
+│   ├── index.html            Slim HTML shell
+│   ├── css/styles.css        All styling
+│   └── js/
+│       ├── app.js            UI logic, rendering, event wiring (ES module)
+│       ├── api.js            Fetch wrappers for all backend endpoints
+│       └── voice.js          Web Speech API: mic input + speech synthesis
+├── data/
+│   ├── metro.json            Bengaluru metro graph (stations, lines, fares)
+│   └── areas.json            Neighbourhoods and landmarks for autocomplete
+├── tests/
+│   └── eval_routes.py        Manual route evaluation script (5 corridors)
+├── docs/
+│   └── screenshot.png        UI screenshot placeholder
+├── requirements.txt
+├── .env.example
+└── README.md
+```
 
 ---
 
 ## Roadmap
 
-| Priority | Item                                                                 |
-|----------|----------------------------------------------------------------------|
-| High     | BMTC bus network integration for areas without metro access          |
-| High     | Live metro arrival times via BMRCL GTFS-R feed                       |
-| Medium   | Additional Indian languages: Telugu, Malayalam                        |
-| Medium   | WhatsApp and IVR interface for feature-phone accessibility            |
-| Low      | Offline mode with pre-cached route responses                         |
-| Low      | Accessibility improvements: screen reader annotations on timeline     |
+- Real BMTC bus schedule integration (GTFS feed)
+- Namma Metro real-time arrivals via official API
+- Persistent conversation sessions (Valkey)
+- PWA offline mode with cached metro graph
+- More Indian languages (Telugu, Malayalam)
 
 ---
 
-## Team
+## Hackathon Background
 
-**Backbenchers**
+Namma Route Buddy was built for the **IBM Granite Hackathon 2024**. The goal was to explore whether a small, locally-run LLM (IBM Granite 3.3:2b via Ollama) could provide genuinely useful transit guidance in multiple Indian languages without requiring any cloud API for inference.
 
-Built with IBM Bob, IBM Granite, Ollama, FastAPI, and a lot of Bengaluru transit knowledge.
+The LLM is used only for two narrow tasks — structured intent extraction and friendly reply narration — keeping the routing logic deterministic and verifiable. This architecture means the app degrades gracefully: if Ollama is unavailable, rule-based fallbacks handle both tasks.
+
+---
+
+## Credits
+
+- Routing data: [Google Maps Platform](https://developers.google.com/maps) (live mode) / built-in metro graph (offline mode)
+- LLM inference: [IBM Granite](https://www.ibm.com/granite) via [Ollama](https://ollama.ai)
+- UI design system inspired by [Carbon Design System](https://carbondesignsystem.com)
+- Metro network data: [Namma Metro](https://english.bmrcl.in/)

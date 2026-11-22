@@ -1,9 +1,11 @@
-import os, json, requests
-from dotenv import load_dotenv
+"""
+app/llm/ollama.py – Ollama chat client.
 
-load_dotenv()
+Calls POST /api/chat and returns the assistant message content.
+"""
 
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
+import requests
+from app.config import cfg
 
 
 def chat(messages: list[dict], model: str, json_mode: bool = False) -> str:
@@ -18,7 +20,7 @@ def chat(messages: list[dict], model: str, json_mode: bool = False) -> str:
         payload["format"] = "json"
 
     resp = requests.post(
-        f"{OLLAMA_URL}/api/chat",
+        f"{cfg.OLLAMA_URL}/api/chat",
         json=payload,
         timeout=60,
     )
